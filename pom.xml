@@ -192,12 +192,6 @@
                         </goals>
                         <configuration>
                             <!-- This seems to be necessary as the affinity model maker is failing intermittently without this -->
-                            <relocations>
-                                <relocation>
-                                    <pattern>com.google.protobuf</pattern>
-                                    <shadedPattern>com.eharmony.protobuf</shadedPattern>
-                                </relocation>
-                            </relocations>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -208,13 +202,6 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <!--
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.eharmony.modeling.modelTrainer.Main</mainClass>
-                                </transformer>
-                            </transformers>
-                            -->
                         </configuration>
                     </execution>
                 </executions>
@@ -225,13 +212,11 @@
     <profiles>
         <profile>
             <id>maven-3</id>
-
             <activation>
                 <file>
                     <exists>${basedir}</exists>
                 </file>
             </activation>
-
             <build>
                 <pluginManagement>
                     <plugins>
@@ -286,7 +271,6 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
-
                 <plugins>
                     <plugin>
                         <groupId>net.alchim31.maven</groupId>
@@ -314,7 +298,6 @@
                     </plugin>
                 </plugins>
             </build>
-
             <reporting>
                 <plugins>
                     <plugin>
@@ -324,10 +307,7 @@
                     </plugin>
                 </plugins>
             </reporting>
-
         </profile>
-
     </profiles>
-
 </project>
 
