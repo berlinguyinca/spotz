@@ -24,7 +24,8 @@ class RandomSearch[P, L](
                         space: Space[P],
                         reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
     val startTime = DateTime.now()
-    val firstPoint = space.sample
+    val rngModifiedSpace = space.seed(0)
+    val firstPoint = rngModifiedSpace.sample
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count
@@ -51,7 +52,7 @@ class RandomSearch[P, L](
       case false =>
         val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize).toInt
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
-                                            framework.bestRandomPoint(batchSize, objective, space, reducer))
+                                            framework.bestRandomPoint(trialsSoFar, batchSize, objective, space, reducer))
         // Last 3 args maintain the state
         randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }

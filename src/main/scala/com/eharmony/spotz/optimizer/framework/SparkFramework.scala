@@ -43,20 +43,19 @@ class SparkFramework[P, L](
    *                generated
    * @return the best point with the best loss
    */
-   override def bestRandomPoint(batchSize: Int,
-                                objective: Objective[P, L],
-                                space: Space[P],
-                                reducer: Reducer[(P, L)]): (P, L) = {
-     sc.parallelize(Seq(0 to batchSize - 1)).mapPartitions { partition =>
-       // Create new space with new seed to avoid every executor having the same rng state.
-       val rngModifiedSpace = space.seed(Random.nextLong())
-
-       partition.map { trials =>
-         trials.map { trial =>
-           val point = rngModifiedSpace.sample
-           (point, objective(point))
-         }.reduce(reducer)
-       }
-     }.reduce(reducer)
+  override def bestRandomPoint(startIndex: Long,
+                               batchSize: Long,
+                               objective: Objective[P, L],
+                               space: Space[P],
+                               reducer: Reducer[(P, L)]): (P, L) = {
+    assert(batchSize > 0, "batchSize must be greater than 0")
+    sc.parallelize(startIndex to (startIndex + batchSize - 1)).mapPartitions { partition =>
+      partition.map { trial =>
+        // Create new space with new seed to avoid every executor having the same rng state.
+        val rngModifiedSpace = space.seed(trial)
+        val point = rngModifiedSpace.sample
+        (point, objective(point))
+      }
+    }.reduce(reducer)
   }
 }

@@ -11,5 +11,5 @@ import com.eharmony.spotz.space.Space
  * @author vsuthichai
  */
 trait Framework[P,L] extends Serializable {
-  def bestRandomPoint(batchSize: Int, objective: Objective[P, L], space: Space[P], func: Reducer[(P, L)]): (P, L)
+  def bestRandomPoint(start: Long, batchSize: Long, objective: Objective[P, L], space: Space[P], func: Reducer[(P, L)]): (P, L)
 }
