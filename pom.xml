@@ -5,6 +5,10 @@
     <groupId>com.eharmony</groupId>
     <artifactId>spotz</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Spark HyperParameter Optimization</name>
+    <description>A library for performing hyperparameter optimization on top of Spark</description>
+    <url>https://github.com/eHarmony/spotz.git</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
