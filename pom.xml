@@ -22,6 +22,17 @@
         <scala.compat.version>${scala.major.version}</scala.compat.version>
     </properties>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>eHarmony</id>
+            <url>https://repository.corp.eharmony.com/nexus/content/repositories/internal-snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -84,33 +95,10 @@
     </dependencies>
 
     <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
+
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.17</version>
-                <executions>
-                    <execution>
-                        <id>surefire-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -166,6 +154,72 @@
                 </dependencies>
             </plugin>
             <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <id>scala-compile</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <recompileMode>all</recompileMode>
+                    <useZincServer>true</useZincServer>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <displayCmd>true</displayCmd>
+                    <verbose>true</verbose>
+                    <failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
+                    <args>
+                        <arg>-target:jvm-${scala.java.version}</arg>
+                        <arg>-feature</arg>
+                        <arg>-deprecation</arg>
+                        <arg>-Ycheck:jvm</arg>
+                        <arg>-Ywarn-all</arg>
+                        <arg>-unchecked</arg>
+                    </args>
+                    <jvmArgs>
+                    </jvmArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.2</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.17</version>
+                <executions>
+                    <execution>
+                        <id>surefire-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.2</version>
@@ -191,7 +245,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <!-- This seems to be necessary as the affinity model maker is failing intermittently without this -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
@@ -206,107 +259,77 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.5</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.1.5</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <profiles>
         <profile>
-            <id>maven-3</id>
-            <activation>
-                <file>
-                    <exists>${basedir}</exists>
-                </file>
-            </activation>
+            <id>release</id>
             <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <!-- see http://davidb.github.com/scala-maven-plugin -->
-
-                            <!--
-                                 # Use zinc for incremental compilation: See http://typesafe.com/blog/zinc-and-incremental-compilation
-
-                                 *************** INSTALLING ZINC ***************
-
-                                 On OS X, use brew:
-                                 brew install zinc
-
-                                 ZINC_VERSION=0.3.7
-                                 curl "http://repo.typesafe.com/typesafe/zinc/com/typesafe/zinc/dist/0.2.5/zinc-${ZINC_VERSION}.tgz" > zinc-${ZINC_VERSION}.tgz
-                                 tar -zxvf zinc-${ZINC_VERSION}.tgz
-                                 sudo mkdir -p /usr/share/java 2>/dev/null
-                                 sudo mv zinc-${ZINC_VERSION} /usr/share/java/zinc-${ZINC_VERSION}
-                                 cd /usr/share/java
-                                 sudo ln -s zinc-${ZINC_VERSION} zinc
-                                 cd /usr/local/bin
-                                 sudo ln -s /usr/share/java/zinc/bin/zinc zinc
-
-
-                                 *************** RUNNING ZINC ***************
-
-                                 zinc -start -nailed
-                              -->
-
-                            <groupId>net.alchim31.maven</groupId>
-                            <artifactId>scala-maven-plugin</artifactId>
-                            <version>3.2.0</version>
-                            <configuration>
-                                <recompileMode>all</recompileMode>
-                                <useZincServer>true</useZincServer>
-                                <scalaVersion>${scala.version}</scalaVersion>
-                                <displayCmd>true</displayCmd>
-                                <verbose>true</verbose>
-                                <failOnMultipleScalaVersions>true</failOnMultipleScalaVersions>
-                                <args>
-                                    <arg>-target:jvm-${scala.java.version}</arg>
-                                    <arg>-feature</arg>
-                                    <arg>-deprecation</arg>
-                                    <arg>-Ycheck:jvm</arg>
-                                    <arg>-Ywarn-all</arg>
-                                    <arg>-unchecked</arg>
-                                </args>
-                                <jvmArgs>
-                                </jvmArgs>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
                 <plugins>
                     <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.2.1</version>
                         <executions>
                             <execution>
-                                <id>scala-compile</id>
-                                <phase>process-resources</phase>
+                                <id>attach-sources</id>
                                 <goals>
-                                    <goal>add-source</goal>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>scala-test-compile</id>
-                                <phase>process-test-resources</phase>
-                                <goals>
-                                    <goal>testCompile</goal>
+                                    <goal>jar-no-fork</goal>
                                 </goals>
                             </execution>
                         </executions>
-                        <configuration>
-
-                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
-            <reporting>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.1.5</version>
-                    </plugin>
-                </plugins>
-            </reporting>
         </profile>
     </profiles>
 </project>

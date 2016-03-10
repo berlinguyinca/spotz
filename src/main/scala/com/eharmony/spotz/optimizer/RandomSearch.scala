@@ -20,33 +20,25 @@ class RandomSearch[P, L](
     (implicit pointLossOrdering: Ordering[(P, L)])
   extends BaseOptimizer[P, L] {
 
-  override def minimize(objective: Objective[P, L], space: Space[P]): RandomSearchResult[P, L] = {
-    optimize(objective, space, min)
-  }
-
-  override def maximize(objective: Objective[P, L], space: Space[P]): RandomSearchResult[P, L] = {
-    optimize(objective, space, max)
-  }
-
-  private[this] def optimize(objective: Objective[P, L],
-                             space: Space[P],
-                             reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
+  override def optimize(objective: Objective[P, L],
+                        space: Space[P],
+                        reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
     val startTime = DateTime.now()
     val firstPoint = space.sample
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count
-    optimize(objective, space, reducer, startTime, firstPoint, firstLoss, 1)
+    randomSearch(objective, space, reducer, startTime, firstPoint, firstLoss, 1)
   }
 
   @tailrec
-  private[this] def optimize(objective: Objective[P, L],
-                             space: Space[P],
-                             reducer: Reducer[(P, L)],
-                             startTime: DateTime,
-                             bestPointSoFar: P,
-                             bestLossSoFar: L,
-                             trialsSoFar: Long): RandomSearchResult[P, L] = {
+  private[this] def randomSearch(objective: Objective[P, L],
+                                 space: Space[P],
+                                 reducer: Reducer[(P, L)],
+                                 startTime: DateTime,
+                                 bestPointSoFar: P,
+                                 bestLossSoFar: L,
+                                 trialsSoFar: Long): RandomSearchResult[P, L] = {
 
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)
@@ -60,10 +52,8 @@ class RandomSearch[P, L](
         val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize).toInt
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
                                             framework.bestRandomPoint(batchSize, objective, space, reducer))
-        val newTrialsSoFar = trialsSoFar + batchSize
-
         // Last 3 args maintain the state
-        optimize(objective, space, reducer, startTime, bestPoint, bestLoss, newTrialsSoFar)
+        randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }
   }
 }

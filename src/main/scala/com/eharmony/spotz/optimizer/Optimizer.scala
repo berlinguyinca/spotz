@@ -13,9 +13,19 @@ trait Optimizer[P, L] extends Serializable {
   def maximize(objective: Objective[P, L], space: Space[P]): OptimizerResult[P, L]
 }
 
-abstract class BaseOptimizer[P, L] extends Optimizer[P, L] {
+abstract class BaseOptimizer[P, L](implicit ord: Ordering[(P, L)]) extends Optimizer[P, L] {
   def min(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.min(p1, p2)
   def max(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.max(p1, p2)
+
+  override def minimize(objective: Objective[P, L], space: Space[P]): OptimizerResult[P, L] = {
+    optimize(objective, space, min)
+  }
+
+  override def maximize(objective: Objective[P, L], space: Space[P]): OptimizerResult[P, L] = {
+    optimize(objective, space, max)
+  }
+
+  def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): RandomSearchResult[P, L]
 }
 
 class OptimizerResult[P, L](best: P, bestLoss: L)

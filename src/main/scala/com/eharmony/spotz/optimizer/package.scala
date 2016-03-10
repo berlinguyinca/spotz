@@ -5,5 +5,4 @@ package com.eharmony.spotz
  */
 package object optimizer {
   type Reducer[T] = (T, T) => T
-
 }

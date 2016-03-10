@@ -39,9 +39,8 @@ class SparkVwCrossValidationObjective(
    * An alternative approach is to train K cache files and train the regressor K - 1 times and
    * test on the last test cache file.
    *
-   * @return a map representation
-   *         key is the fold number
-   *         value is (trainingSetFilename, testSetFilename)
+   * @return a map representation where key is the fold number and value is
+   *         (trainingSetFilename, testSetFilename)
    */
   private[this] def prepareVwInput(inputPath: String): immutable.Map[Int, (String, String)] = {
     val enumeratedVwInput = Source.fromFile(inputPath).getLines().zipWithIndex.toList

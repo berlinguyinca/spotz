@@ -6,11 +6,9 @@ import com.eharmony.spotz.util.RegexUtil.floatingPointRegex
 /**
  * @author vsuthichai
  */
-case class VwProcess(params: String) extends CommandLineProcess {
-  val cmd = s"vw $params"
-
+case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
   def apply(): VwResult = {
-    val processResult: ProcessResult = run(cmd)
+    val processResult: ProcessResult = run()
 
     VwResult(processResult.exitCode,
              processResult.stdout,
@@ -24,7 +22,7 @@ case class VwProcess(params: String) extends CommandLineProcess {
 
   // TODO: What else is important that should be returned as part of the VwResult?
 
-  override def toString = cmd
+  override def toString = s"vw $params"
 }
 
 case class VwResult(
