@@ -5,7 +5,7 @@ import scala.util.Random
 /**
  * @author vsuthichai
  */
-case class HyperParameter(label: String, samplingFunction: SamplingFunction[Double]) {
+case class HyperParameter[T](label: String, samplingFunction: SamplingFunction[T]) {
   def sample(implicit rng: Random) = samplingFunction.sample
 }
 

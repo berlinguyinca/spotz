@@ -27,8 +27,8 @@ class BraninObjective[P <: Point] extends Objective[P, Double] {
    * @return a Double which is the result of evaluating the Branin function
    */
   override def apply(point: P): Double = {
-    val x1 = point.get("x1")
-    val x2 = point.get("x2")
+    val x1 = point.get[Double]("x1")
+    val x2 = point.get[Double]("x2")
 
     a * pow(x2 - b*pow(x1, 2) + c*x1 - r, 2) + s*(1-t)*cos(x1) + s
   }

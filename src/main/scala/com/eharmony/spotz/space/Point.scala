@@ -1,16 +1,17 @@
 package com.eharmony.spotz.space
 
+import scala.collection.mutable
+
 /**
- * @author vsuthichai
- */
-class Point(private[this] val hyperParameterValues: Map[String, Double]) extends Serializable {
+  * @author vsuthichai
+  */
+class Point(private[this] val hyperParamMap: Map[String, Any]) extends Serializable {
 
-  def get(label: String): Double = hyperParameterValues(label)
-
-  def getHyperParameterLabels: Set[String] = hyperParameterValues.keySet
+  def get[T](label: String): T = hyperParamMap(label).asInstanceOf[T]
+  def getHyperParameterLabels: Set[String] = hyperParamMap.keySet
 
   override def toString: String = {
-    val paramStrings = hyperParameterValues.foldLeft(new StringBuilder()) {
+    val paramStrings = hyperParamMap.foldLeft(new StringBuilder()) {
       case (sb, (label, value)) => sb ++= s"$label -> $value, "
     }
     s"Point($paramStrings)"
@@ -18,12 +19,13 @@ class Point(private[this] val hyperParameterValues: Map[String, Double]) extends
 }
 
 class PointBuilder {
-  private[this] val map = scala.collection.mutable.Map[String, Double]()
 
-  def withHyperParameter(label: String, value: Double): PointBuilder = {
-    map += ((label, value))
+  private[this] val hyperParamMap = mutable.Map[String, Any]()
+
+  def withHyperParameter[T](label: String, value: T): PointBuilder = {
+    hyperParamMap.put(label, value)
     this
   }
 
-  def build: Point = new Point(map.toMap)
+  def build: Point = new Point(hyperParamMap.toMap)
 }

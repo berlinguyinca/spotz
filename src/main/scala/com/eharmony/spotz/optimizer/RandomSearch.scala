@@ -1,9 +1,10 @@
 package com.eharmony.spotz.optimizer
 
-import com.eharmony.spotz.optimizer.framework.Framework
+import com.eharmony.spotz.spark.SparkFunctions
 import com.eharmony.spotz.optimizer.stop.StopStrategy
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.space.Space
+import org.apache.spark.SparkContext
 import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.{DateTime, Duration}
 
@@ -14,15 +15,14 @@ import scala.math.Ordering
  * @author vsuthichai
  */
 class RandomSearch[P, L](
-    framework: Framework[P, L],
+    @transient sc: SparkContext,
     stopStrategy: StopStrategy,
     trialBatchSize: Int = 100000)
     (implicit pointLossOrdering: Ordering[(P, L)])
-  extends BaseOptimizer[P, L] {
+  extends SparkBaseOptimizer[P, L](sc)(pointLossOrdering)
+  with SparkFunctions[P, L] {
 
-  override def optimize(objective: Objective[P, L],
-                        space: Space[P],
-                        reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
+  override def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
     val startTime = DateTime.now()
     val rngModifiedSpace = space.seed(0)
     val firstPoint = rngModifiedSpace.sample
@@ -52,7 +52,7 @@ class RandomSearch[P, L](
       case false =>
         val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize).toInt
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
-                                            framework.bestRandomPoint(trialsSoFar, batchSize, objective, space, reducer))
+                                            bestRandomPoint(trialsSoFar, batchSize, objective, space, reducer))
         // Last 3 args maintain the state
         randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }

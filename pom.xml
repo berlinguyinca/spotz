@@ -22,6 +22,7 @@
         <commons.net.version>3.1</commons.net.version>
         <joda.time.version>2.9.2</joda.time.version>
         <joda.convert.version>1.8.1</joda.convert.version>
+        <vfs2.version>2.1</vfs2.version>
         <scalatest.version>3.0.0-M15</scalatest.version>
         <scala.compat.version>${scala.major.version}</scala.compat.version>
     </properties>
@@ -89,6 +90,11 @@
             <groupId>org.joda</groupId>
             <artifactId>joda-convert</artifactId>
             <version>${joda.convert.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <version>${vfs2.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scalatest</groupId>
@@ -282,7 +288,7 @@
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.5</version>
+                <version>3.2.2</version>
             </plugin>
         </plugins>
     </reporting>

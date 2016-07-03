@@ -25,4 +25,6 @@ abstract class CommandLineProcess(cmd: String) extends Serializable {
   }
 }
 
+abstract class StreamingCommandLineProcess(cmd: String, stdin: Iterable[String])
+
 case class ProcessResult(exitCode: Int, stdout: String, stderr: String)

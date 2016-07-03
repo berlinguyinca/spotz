@@ -14,7 +14,7 @@ trait Space[T] extends Serializable {
 // Scala 2.10 Random is not Serializable?
 class SerializableRandom(seed: Long) extends Random(seed) with Serializable
 
-case class HyperSpace(seed: Long, params: Seq[HyperParameter]) extends Space[Point] {
+case class HyperSpace(seed: Long, params: Seq[HyperParameter[_]]) extends Space[Point] {
   val rng = new SerializableRandom(seed)
 
   override def sample: Point = {

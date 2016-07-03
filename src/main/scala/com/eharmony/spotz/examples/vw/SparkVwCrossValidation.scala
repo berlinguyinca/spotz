@@ -2,11 +2,10 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.Preamble
 import Preamble._
+import com.eharmony.spotz.objective.vw.VwCrossValidationObjective
 import com.eharmony.spotz.optimizer.RandomSearch
-import com.eharmony.spotz.objective.vw.SparkVwCrossValidationObjective
-import com.eharmony.spotz.optimizer.framework.SparkFramework
 import com.eharmony.spotz.optimizer.stop.StopStrategy
-import com.eharmony.spotz.space.{Uniform, HyperParameter, HyperSpace, Point}
+import com.eharmony.spotz.space.{HyperParameter, HyperSpace, Point, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -21,12 +20,16 @@ object SparkVwCrossValidation {
 
     // Boiler plate
     val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
-    val framework = new SparkFramework[Point, Double](sc)
     val stopStrategy = StopStrategy.stopAfterMaxTrials(trials)
-    val optimizer = new RandomSearch[Point, Double](framework, stopStrategy)
-    val objective = new SparkVwCrossValidationObjective(sc, folds, vwDataset, "--binary")
+    val optimizer = new RandomSearch[Point, Double](sc, stopStrategy)
+    val objective = new VwCrossValidationObjective(
+      sc = sc,
+      numFolds = folds,
+      vwInputPath = vwDataset,
+      vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
+      vwTestParamsString = Option("--loss_function logistic"))
     val space = new HyperSpace(seed = 0, Seq(
-      HyperParameter("l", new Uniform(0, 20))
+      HyperParameter("l", new Uniform(0, 1))
     ))
 
     // Minimize

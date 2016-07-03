@@ -1,11 +1,15 @@
 package com.eharmony.spotz.util
 
 import java.io.File
+import java.io.InputStream
+
+import org.apache.commons.vfs2.VFS
 
 /**
  * @author vsuthichai
  */
 object FileUtil {
+  val vfs2 = VFS.getManager
 
   /**
    * Return a file with a filename guaranteed not to be used on the file system.  This is
@@ -21,5 +25,10 @@ object FileUtil {
     if (deleteOnExit)
       f.deleteOnExit()
     f
+  }
+
+  def loadFile(path: String): InputStream = {
+    val file = vfs2.resolveFile(path)
+    file.getContent.getInputStream
   }
 }

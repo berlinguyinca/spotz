@@ -3,7 +3,6 @@ package com.eharmony.spotz.examples.branin
 import com.eharmony.spotz.Preamble
 import Preamble._
 import com.eharmony.spotz.optimizer.RandomSearch
-import com.eharmony.spotz.optimizer.framework.SparkFramework
 import com.eharmony.spotz.optimizer.stop.StopStrategy
 import com.eharmony.spotz.space.{HyperParameter, HyperSpace, Point, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -27,9 +26,8 @@ object BraninTimed {
     ))
 
     val seconds = args(0).toInt
-    val framework = new SparkFramework[Point, Double](sc)
     val stopStrategy = StopStrategy.stopAfterMaxDuration(Duration.standardSeconds(seconds))
-    val optimizer = new RandomSearch[Point, Double](framework, stopStrategy)
+    val optimizer = new RandomSearch[Point, Double](sc, stopStrategy)
     val result = optimizer.minimize(new BraninObjective, space)
 
     sc.stop()
