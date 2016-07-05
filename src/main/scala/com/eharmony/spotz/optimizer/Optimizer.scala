@@ -1,6 +1,7 @@
 package com.eharmony.spotz.optimizer
 
 import com.eharmony.spotz.objective.Objective
+import com.eharmony.spotz.optimizer.random.RandomSearchResult
 import com.eharmony.spotz.space.Space
 import org.apache.spark.SparkContext
 
@@ -26,7 +27,7 @@ abstract class SparkBaseOptimizer[P, L](@transient val sc: SparkContext)(implici
     optimize(objective, space, max)
   }
 
-  def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): RandomSearchResult[P, L]
+  def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): OptimizerResult[P, L]
 }
 
 class OptimizerResult[P, L](best: P, bestLoss: L)

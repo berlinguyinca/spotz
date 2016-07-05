@@ -1,9 +1,9 @@
-package com.eharmony.spotz.optimizer
+package com.eharmony.spotz.optimizer.random
 
-import com.eharmony.spotz.spark.SparkFunctions
-import com.eharmony.spotz.optimizer.stop.StopStrategy
 import com.eharmony.spotz.objective.Objective
+import com.eharmony.spotz.optimizer._
 import com.eharmony.spotz.space.Space
+import com.eharmony.spotz.spark.SparkFunctions
 import org.apache.spark.SparkContext
 import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.{DateTime, Duration}
@@ -20,7 +20,7 @@ class RandomSearch[P, L](
     trialBatchSize: Int = 100000)
     (implicit pointLossOrdering: Ordering[(P, L)])
   extends SparkBaseOptimizer[P, L](sc)(pointLossOrdering)
-  with SparkFunctions[P, L] {
+    with SparkFunctions[P, L] {
 
   override def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
     val startTime = DateTime.now()
@@ -56,28 +56,5 @@ class RandomSearch[P, L](
         // Last 3 args maintain the state
         randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }
-  }
-}
-
-class RandomSearchResult[P, L](
-    bestPoint: P,
-    bestLoss: L,
-    startTime: DateTime,
-    endTime: DateTime,
-    totalTrials: Long,
-    elapsedTime: Duration)
-  extends OptimizerResult[P, L](bestPoint, bestLoss) {
-
-  override def toString = {
-    val formatter = new PeriodFormatterBuilder()
-      .appendDays().appendSuffix("d")
-      .appendHours().appendSuffix("h")
-      .appendMinutes().appendSuffix("m")
-      .appendSeconds().appendSuffix("s")
-      .appendMillis().appendSuffix("ms")
-      .toFormatter
-
-      s"RandomSearchResult(bestPoint=$bestPoint, bestLoss=$bestLoss, " +
-      s"totalTrials=$totalTrials, duration=${formatter.print(elapsedTime.toPeriod)}"
   }
 }

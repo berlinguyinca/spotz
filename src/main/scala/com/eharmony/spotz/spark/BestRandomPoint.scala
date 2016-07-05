@@ -46,7 +46,7 @@ trait BestRandomPoint[P, L] {
                       reducer: Reducer[(P, L)]): (P, L) = {
     assert(batchSize > 0, "batchSize must be greater than 0")
 
-    sc.parallelize(startIndex to (startIndex + batchSize - 1)).mapPartitions { partition =>
+    sc.parallelize(startIndex until (startIndex + batchSize)).mapPartitions { partition =>
       partition.map { trial =>
         // Create new space with new seed to avoid every executor having the same rng state.
         val rngModifiedSpace = space.seed(trial)

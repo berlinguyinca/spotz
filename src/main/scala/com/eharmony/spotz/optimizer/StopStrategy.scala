@@ -1,4 +1,4 @@
-package com.eharmony.spotz.optimizer.stop
+package com.eharmony.spotz.optimizer
 
 import org.joda.time.Duration
 

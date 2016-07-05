@@ -5,8 +5,6 @@ import com.eharmony.spotz.space.Point
 import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.{SparkContext, SparkFiles}
 
-import scala.collection.mutable
-
 /**
   *
   * @author vsuthichai
@@ -14,50 +12,16 @@ import scala.collection.mutable
 class VwCrossValidationObjective(
     @transient val sc: SparkContext,
     val numFolds: Int,
-    val vwInputPath: String,
-    val vwTrainParamsString: Option[String],
-    val vwTestParamsString: Option[String])
+    val vwDatasetPath: String,
+    vwTrainParamsString: Option[String],
+    vwTestParamsString: Option[String])
   extends SparkObjective[Point, Double]
-    with VwCrossValidationLoaderImpl {
+    with VwCrossValidationLoader
+    with VwFunctions {
 
-  val vwTrainParamsMap = VwArgParser(vwTrainParamsString)
-  val vwTestParamsMap = VwArgParser(vwTestParamsString)
-  val foldToVwCacheFiles = prepareVwInput(vwInputPath)
-
-  def mergeVwParams(vwParamMap: Map[String, String], point: Point) = {
-    val vwParamsMutableMap = mutable.Map[String, Any]()
-
-    vwParamMap.foldLeft(vwParamsMutableMap) { case (mutableMap, (k, v)) =>
-      mutableMap += (k -> v)
-    }
-
-    point.getHyperParameterLabels.foldLeft(vwParamsMutableMap) { (mutableMap, vwHyperParam) =>
-      mutableMap += (vwHyperParam -> point.get(vwHyperParam))
-    }
-
-    vwParamsMutableMap.remove("cache_file")
-    vwParamsMutableMap.remove("f")
-    vwParamsMutableMap.remove("t")
-    vwParamsMutableMap.remove("i")
-
-    vwParamsMutableMap
-  }
-
-  def vwParamMapToString(vwParamMap: Map[String, Any]): String = {
-    vwParamMap.foldLeft(new StringBuilder) { case (sb, (vwArg, vwValue)) =>
-      val dashes = if (vwArg.length == 1) "-" else "--"
-      sb ++= s"$dashes$vwArg $vwValue "
-    }.toString()
-  }
-
-  def getTrainVwParams(vwParamMap: Map[String, String], point: Point): String = {
-    val vwParamsMutableMap = mergeVwParams(vwParamMap, point)
-    vwParamMapToString(vwParamsMutableMap.toMap)
-  }
-
-  def getTestVwParams(vwParamMap: Map[String, String], point: Point): String = {
-    vwParamMapToString(vwParamMap)
-  }
+  val vwTrainParamsMap = parseVwArgs(vwTrainParamsString)
+  val vwTestParamsMap = parseVwArgs(vwTestParamsString)
+  val foldToVwCacheFiles = prepareVwInput(vwDatasetPath)
 
   /**
     * This method can run on the driver and/or the executor.  It performs a k-fold cross validation
@@ -81,7 +45,7 @@ class VwCrossValidationObjective(
       val vwTestFile = SparkFiles.get(vwTestFilename)
 
       // Initialize the model file on the filesystem.  Just reserve a unique filename.
-      val modelFile = FileUtil.tempFile(s"model-$fold-", ".vw")
+      val modelFile = FileUtil.tempFile(s"model-fold-$fold.vw")
 
       // Train
       val vwTrainingProcess = VwProcess(s"-f ${modelFile.getAbsolutePath} --cache_file $vwTrainingFile $vwTrainParams")
@@ -98,8 +62,7 @@ class VwCrossValidationObjective(
       logInfo(s"Test stderr ${vwTestResult.stderr}")
       val loss = vwTestResult.loss.getOrElse(throw new RuntimeException("Unable to obtain avg loss from test result"))
 
-      // Delete the model.  We don't need these sitting around on the executor's filesystem
-      // since they can pile up pretty quickly across many cross validation folds.
+      // Delete the model.  We don't need these sitting around on the executor's filesystem.
       modelFile.delete()
 
       loss

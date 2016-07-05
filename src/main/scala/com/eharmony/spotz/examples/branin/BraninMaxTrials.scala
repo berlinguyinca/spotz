@@ -2,8 +2,8 @@ package com.eharmony.spotz.examples.branin
 
 import com.eharmony.spotz.Preamble
 import Preamble._
-import com.eharmony.spotz.optimizer.RandomSearch
-import com.eharmony.spotz.optimizer.stop.StopStrategy
+import com.eharmony.spotz.optimizer.StopStrategy
+import com.eharmony.spotz.optimizer.random.RandomSearch
 import com.eharmony.spotz.space.{HyperParameter, HyperSpace, Point, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
