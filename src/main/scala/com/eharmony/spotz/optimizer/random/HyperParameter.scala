@@ -1,13 +1,15 @@
-package com.eharmony.spotz.space
+package com.eharmony.spotz.optimizer.random
 
 import scala.util.Random
 
 /**
- * @author vsuthichai
- */
+  * @author vsuthichai
+  */
+/*
 case class HyperParameter[T](label: String, samplingFunction: SamplingFunction[T]) {
   def sample(implicit rng: Random) = samplingFunction.sample
 }
+*/
 
 trait SamplingFunction[T] extends Serializable {
   def sample(implicit rng: Random): T

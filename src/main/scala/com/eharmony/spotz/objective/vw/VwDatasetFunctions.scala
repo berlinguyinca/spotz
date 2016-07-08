@@ -1,30 +1,67 @@
 package com.eharmony.spotz.objective.vw
 
+import java.io.PrintWriter
+
 import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.SparkContext
 
 import scala.collection.mutable
 import scala.io.Source
+import scala.language.postfixOps
 
 /**
   * @author vsuthichai
   */
-trait VwDatasetLoader extends VwSparkFunctions {
-  @transient val sc: SparkContext
+trait VwDatasetFunctions {
+  val sc: SparkContext
 
   /**
+    * Produce a VW cache file given a dataset in VW format and add it to the <code>SparkContext</code>.
+    * This VW cache file is then accessible by Spark executors by obtaining the  absolute path of the
+    * cache file through <code>SparkFiles</code>.
     *
-    * @param inputPath
-    * @return
+    * @param vwDataset
+    * @param vwCacheFilename
     */
-  def prepareVwInput(inputPath: String): String = {
-    val dataset = Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines().toIterable
-    addDatasetToSpark(dataset, "dataset.cache")
+  def addDatasetToSpark(vwDataset: Iterator[String], vwCacheFilename: String): String = {
+    // Write VW dataset to a temporary file
+    val vwDatasetFile = FileUtil.tempFile("dataset.vw")
+    val vwDatasetWriter = new PrintWriter(vwDatasetFile)
+    vwDataset.foreach(line => vwDatasetWriter.println(line))
+    vwDatasetWriter.close()
+
+    // Create a VW cache file from the dataset
+    val vwCacheFile = FileUtil.tempFile(vwCacheFilename)
+    val vwCacheProcess = VwProcess(s"-k --cache_file ${vwCacheFile.getAbsolutePath} -d ${vwDatasetFile.getAbsolutePath}")
+    val vwCacheResult = vwCacheProcess()
+
+    assert(vwCacheResult.exitCode == 0,
+      s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
+
+    sc.addFile(vwCacheFile.getAbsolutePath)
+    vwCacheFile.getName
   }
 }
 
-trait VwCrossValidationLoader extends VwSparkFunctions {
-  @transient val sc: SparkContext
+trait VwDatasetLoader extends VwDatasetFunctions {
+  val sc: SparkContext
+
+  def prepareVwInput(inputIterator: Iterator[String]): String = {
+    addDatasetToSpark(inputIterator, "dataset.cache")
+  }
+
+  def prepareVwInput(inputIterable: Iterable[String]): String = {
+    prepareVwInput(inputIterable.toIterator)
+  }
+
+  def prepareVwInput(inputPath: String): String = {
+    val dataset = Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines()
+    prepareVwInput(dataset)
+  }
+}
+
+trait VwCrossValidationLoader extends VwDatasetFunctions {
+  val sc: SparkContext
   val numFolds: Int
   val vwDatasetPath: String
 
@@ -60,10 +97,10 @@ trait VwCrossValidationLoader extends VwSparkFunctions {
         case (line, lineNumber) if lineNumber % numFolds == fold => false
       }
 
-      val train = trainWithLineNumber.map { case (line, lineNumber) => line }
+      val train = trainWithLineNumber.map { case (line, lineNumber) => line } toIterator
       val vwTrainingCacheFilename = addDatasetToSpark(train, s"train-fold-$fold.cache")
 
-      val test = testWithLineNumber.map { case (line, lineNumber) => line }
+      val test = testWithLineNumber.map { case (line, lineNumber) => line } toIterator
       val vwTestCacheFilename = addDatasetToSpark(test, s"test-fold-$fold.cache")
 
       // Add it to the map which will be referenced later on the executor

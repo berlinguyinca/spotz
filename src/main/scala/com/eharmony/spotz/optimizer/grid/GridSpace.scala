@@ -1,6 +1,6 @@
 package com.eharmony.spotz.optimizer.grid
 
-import com.eharmony.spotz.space.{Point, PointBuilder, Space}
+import com.eharmony.spotz.optimizer.Space
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
@@ -14,18 +14,18 @@ import scala.language.postfixOps
   *
   * @author vsuthichai
   */
-class GridSpace(gridParams: Iterable[(String, Iterable[_])]) extends Space[Point] {
+class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[String, _]) => P) extends Space[P] {
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
   // Expand the entire grid space.  The memory required is linear in the sum of lengths of all the iterables
-  val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
+  private[this] val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
 
   // pre-compute the length of each grid iterable, indexed into a Seq
-  val gridLengths = gridSpace.map { case (label, seq) => seq.length }
+  private[this] val gridLengths = gridSpace.map { case (label, seq) => seq.length }
 
   // pre-compute the divisible factor and store along with the length inside GridProperty
   // http://phrogz.net/lazy-cartesian-product
-  val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l: Int, b) =>
+  private[this] val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l: Int, b) =>
     if (b.isEmpty) GridProperty(1, l) +=: b
     else GridProperty(b.head.length * b.head.factor, l) +=: b
   }
@@ -33,20 +33,20 @@ class GridSpace(gridParams: Iterable[(String, Iterable[_])]) extends Space[Point
   val max = gridLengths.product
   var i = -1
 
-  override def sample: Point = {
+  override def sample: P = {
     i += 1
 
     if (i >= max)
       throw new RuntimeException("Grid space has been exhausted of all values.")
 
     val gridIndices = gridProperties.map { case GridProperty(factor, length) => (i / factor) % length }
+    val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
+      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex))
+    }.toMap
 
-    gridIndices.zipWithIndex.foldLeft(new PointBuilder) { case (pb, (arrayIndex, gridIndex)) =>
-      pb.withHyperParameter(gridSpace(gridIndex)._1, gridSpace(gridIndex)._2(arrayIndex))
-    }.build
+    factory(hyperParamValues)
   }
-
-  override def seed(seed: Long): Space[Point] = ???
 }
 
+case class GridRow(label: String, values: Seq[_])
 case class GridProperty(factor: Int, length: Int)

@@ -36,11 +36,11 @@ object VwProcess {
 }
 
 /**
- * This is a builder class to make it more convenient to construct the VW command line
- * with all its various arguments.  Using this is not necessary at all as one could simply
- * specify their own VW parameters if they're familiar with them and pass them
- * as a string to the class constructor of VwProcess.
- */
+  * This is a builder class to make it more convenient to construct the VW command line
+  * with all its various arguments.  Using this is not necessary at all as one could simply
+  * specify their own VW parameters if they're familiar with them and pass them
+  * as a string to the class constructor of VwProcess.
+  */
 class VwProcessBuilder {
   private[this] val sb = new StringBuilder
 

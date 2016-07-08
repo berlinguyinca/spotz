@@ -1,20 +1,20 @@
 package com.eharmony.spotz.examples.branin
 
+import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.space.Point
 
 import scala.math._
 
 /**
- * @author vsuthichai
- */
+  * @author vsuthichai
+  */
 class BraninObjective[P <: Point] extends Objective[P, Double] {
   val a = 1
-  val b = 5.1/(4*pow(Pi,2))
-  val c = 5/Pi
+  val b = 5.1 / (4 * pow(Pi, 2))
+  val c = 5 / Pi
   val r = 6
   val s = 10
-  val t = 1/(8*Pi)
+  val t = 1 / (8 * Pi)
 
   /**
    *  Input Domain:

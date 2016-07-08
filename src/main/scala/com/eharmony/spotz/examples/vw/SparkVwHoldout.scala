@@ -4,8 +4,7 @@ import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.objective.vw.VwHoldoutObjective
 import com.eharmony.spotz.optimizer.grid.{GridSearch, GridSpace}
 import com.eharmony.spotz.optimizer.StopStrategy
-import com.eharmony.spotz.optimizer.random.RandomSearch
-import com.eharmony.spotz.space.{HyperParameter, HyperSpace, Uniform, _}
+import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
@@ -29,8 +28,8 @@ object SparkVwHoldout {
       vwTestSetPath = vwTestPath,
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new HyperSpace(seed = 0, Seq(
-      HyperParameter("l", new Uniform(0, 1))
+    val space = new RandomSpace[Point](seed = 0, Map(
+      ("l", new Uniform(0, 1))
     ))
 
     val result = optimizer.minimize(objective, space)
@@ -44,8 +43,8 @@ object SparkVwHoldout {
     val vwTestPath = args(3)
 
     val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
-    val optimizer = new GridSearch[Point, Double](sc)
 
+    val optimizer = new GridSearch[Point, Double](sc)
     val objective = new VwHoldoutObjective(
       sc = sc,
       vwTrainSetPath = vwTrainPath,
@@ -53,7 +52,7 @@ object SparkVwHoldout {
       vwTestSetPath = vwTestPath,
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new GridSpace(Seq(
+    val space = new GridSpace[Point](Map(
       ("l", Seq(1,2,3))
     ))
 

@@ -1,6 +1,6 @@
 package com.eharmony.spotz.objective.vw
 
-import com.eharmony.spotz.space.Point
+import com.eharmony.spotz.Preamble.Point
 
 import scala.collection.mutable
 
@@ -8,26 +8,28 @@ import scala.collection.mutable
   * @author vsuthichai
   */
 trait VwFunctions {
-  def mergeVwParams(vwParamMap: Map[String, String], point: Point) = {
+  def mergeVwParams(vwParamMap: Map[String, String], point: Point): Map[String, _] = {
     val vwParamsMutableMap = mutable.Map[String, Any]()
 
     vwParamMap.foldLeft(vwParamsMutableMap) { case (mutableMap, (k, v)) =>
-      mutableMap += (k -> v)
+      mutableMap += ((k, v))
     }
 
     point.getHyperParameterLabels.foldLeft(vwParamsMutableMap) { (mutableMap, vwHyperParam) =>
-      mutableMap += (vwHyperParam -> point.get(vwHyperParam))
+      mutableMap += ((vwHyperParam, point.get(vwHyperParam)))
     }
 
     vwParamsMutableMap.remove("cache_file")
     vwParamsMutableMap.remove("f")
     vwParamsMutableMap.remove("t")
     vwParamsMutableMap.remove("i")
+    vwParamsMutableMap.remove("d")
+    vwParamsMutableMap.remove("k")
 
-    vwParamsMutableMap
+    vwParamsMutableMap.toMap
   }
 
-  def vwParamMapToString(vwParamMap: Map[String, Any]): String = {
+  def vwParamMapToString(vwParamMap: Map[String, _]): String = {
     vwParamMap.foldLeft(new StringBuilder) { case (sb, (vwArg, vwValue)) =>
       val dashes = if (vwArg.length == 1) "-" else "--"
       sb ++= s"$dashes$vwArg $vwValue "
@@ -35,8 +37,7 @@ trait VwFunctions {
   }
 
   def getTrainVwParams(vwParamMap: Map[String, String], point: Point): String = {
-    val vwParamsMutableMap = mergeVwParams(vwParamMap, point)
-    vwParamMapToString(vwParamsMutableMap.toMap)
+    vwParamMapToString(mergeVwParams(vwParamMap, point))
   }
 
   def getTestVwParams(vwParamMap: Map[String, String], point: Point): String = {
@@ -68,7 +69,7 @@ object VwArgParser {
         (firstArg.substring(1, 2), trimmedArgLine.substring(2).trim)
       }
 
-      argMap + (argName -> argValue)
+      argMap + ((argName, argValue))
     }
   }
 

@@ -7,7 +7,7 @@ import org.joda.time.{DateTime, Duration}
 /**
   * @author vsuthichai
   */
-class RandomSearchResult[P, L](
+case class RandomSearchResult[P, L](
     bestPoint: P,
     bestLoss: L,
     startTime: DateTime,

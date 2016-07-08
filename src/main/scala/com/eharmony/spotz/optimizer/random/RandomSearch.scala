@@ -1,31 +1,31 @@
 package com.eharmony.spotz.optimizer.random
 
+import com.eharmony.spotz.backend.spark.SparkFunctions
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer._
-import com.eharmony.spotz.space.Space
-import com.eharmony.spotz.spark.SparkFunctions
 import org.apache.spark.SparkContext
-import org.joda.time.format.PeriodFormatterBuilder
 import org.joda.time.{DateTime, Duration}
 
 import scala.annotation.tailrec
 import scala.math.Ordering
 
 /**
- * @author vsuthichai
- */
+  * @author vsuthichai
+  */
 class RandomSearch[P, L](
-    @transient sc: SparkContext,
+    @transient val sc: SparkContext,
     stopStrategy: StopStrategy,
     trialBatchSize: Int = 100000)
-    (implicit pointLossOrdering: Ordering[(P, L)])
-  extends SparkBaseOptimizer[P, L](sc)(pointLossOrdering)
-    with SparkFunctions[P, L] {
+    (implicit val ord: Ordering[(P, L)])
+  extends SparkBaseOptimizer[P, L, RandomSpace[P], RandomSearchResult[P, L]]
+    with SparkFunctions {
 
-  override def optimize(objective: Objective[P, L], space: Space[P], reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
+  override def optimize(objective: Objective[P, L],
+                        space: RandomSpace[P],
+                        reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
+
     val startTime = DateTime.now()
-    val rngModifiedSpace = space.seed(0)
-    val firstPoint = rngModifiedSpace.sample
+    val firstPoint = space.sample
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count
@@ -34,7 +34,7 @@ class RandomSearch[P, L](
 
   @tailrec
   private[this] def randomSearch(objective: Objective[P, L],
-                                 space: Space[P],
+                                 space: RandomSpace[P],
                                  reducer: Reducer[(P, L)],
                                  startTime: DateTime,
                                  bestPointSoFar: P,

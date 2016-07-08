@@ -5,13 +5,12 @@ import Preamble._
 import com.eharmony.spotz.objective.vw.VwCrossValidationObjective
 import com.eharmony.spotz.optimizer.grid.{GridSearch, GridSpace}
 import com.eharmony.spotz.optimizer.StopStrategy
-import com.eharmony.spotz.optimizer.random.RandomSearch
-import com.eharmony.spotz.space.{HyperParameter, HyperSpace, Point, Uniform}
+import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
- * @author vsuthichai
- */
+  * @author vsuthichai
+  */
 object SparkVwCrossValidation {
 
   def randomSearch(args: Array[String]) = {
@@ -30,8 +29,9 @@ object SparkVwCrossValidation {
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new HyperSpace(seed = 0, Seq(
-      HyperParameter("l", new Uniform(0, 1))
+    val space = new RandomSpace[Point](seed = 0, Map(
+      ("l", new Uniform(0, 1)),
+      ("l2", new Uniform(0, 0.2))
     ))
 
     val result = optimizer.minimize(objective, space)
@@ -54,7 +54,7 @@ object SparkVwCrossValidation {
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new GridSpace(Seq(
+    val space = new GridSpace[Point](Map(
       ("l", Seq(1,2,3))
     ))
 

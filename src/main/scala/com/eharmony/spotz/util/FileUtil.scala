@@ -1,10 +1,11 @@
 package com.eharmony.spotz.util
 
-import java.io.File
-import java.io.InputStream
+import java.io.{File, FileInputStream, InputStream}
+import java.net.URL
 
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.vfs2.VFS
+import org.apache.commons.vfs2.provider.hdfs.HdfsFileProvider
+import org.apache.commons.vfs2.{FileSystemException, VFS}
 
 /**
   * @author vsuthichai
@@ -33,7 +34,18 @@ object FileUtil {
   }
 
   def loadFile(path: String): InputStream = {
-    val file = vfs2.resolveFile(path)
-    file.getContent.getInputStream
+    try {
+      val vfsFile = vfs2.resolveFile(path)
+      vfsFile.getContent.getInputStream
+    } catch {
+      case e: FileSystemException => throw e
+      //logWarning(s"VFS failed to open file '$path': ${e.getMessage}")
+      // throw e
+      //new FileInputStream(new File(path))
+      /*
+      case t: Throwable =>
+        throw new RuntimeException(s"Failed to open file '$path'", t)
+      */
+    }
   }
 }

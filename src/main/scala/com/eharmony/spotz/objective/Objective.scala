@@ -10,7 +10,7 @@ trait Objective[P, L] extends Serializable with Logging {
 }
 
 trait SparkObjective[P, L] extends Objective[P, L] {
-  @transient val sc: SparkContext
+  val sc: SparkContext
 }
 
 trait CrossValidationObjective[P, L] extends SparkObjective[P, L] {

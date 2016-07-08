@@ -1,7 +1,7 @@
 package com.eharmony.spotz.objective.vw
 
+import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.SparkObjective
-import com.eharmony.spotz.space.Point
 import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.{SparkContext, SparkFiles}
 
@@ -12,31 +12,44 @@ import scala.io.Source
   */
 class VwHoldoutObjective(
     @transient val sc: SparkContext,
-    vwTrainSetPath: String,
+    vwTrainSetIterator: Iterator[String],
     vwTrainParamsString: Option[String],
-    vwTestSetPath: String,
+    vwTestSetIterator: Iterator[String],
     vwTestParamsString: Option[String])
   extends SparkObjective[Point, Double]
     with VwFunctions
     with VwDatasetLoader {
 
+  def this(sc: SparkContext,
+           vwTrainSetIterable: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterable: Iterable[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString)
+  }
+
+  def this(sc: SparkContext,
+           vwTrainSetPath: String,
+           vwTrainParamsString: Option[String],
+           vwTestSetPath: String,
+           vwTestParamsString: Option[String]) = {
+    this(sc, Source.fromInputStream(FileUtil.loadFile(vwTrainSetPath)).getLines(), vwTrainParamsString,
+             Source.fromInputStream(FileUtil.loadFile(vwTestSetPath)).getLines(),  vwTestParamsString)
+  }
+
   val vwTrainParamMap = parseVwArgs(vwTrainParamsString)
   val vwTestParamMap = parseVwArgs(vwTrainParamsString)
 
-  val vwTrainCacheFilename = prepareVwInput(vwTrainSetPath)
-  val vwTestCacheFilename = prepareVwInput(vwTestSetPath)
+  val vwTrainCacheFilename = prepareVwInput(vwTrainSetIterator)
+  val vwTestCacheFilename = prepareVwInput(vwTestSetIterator)
 
   override def apply(point: Point): Double = {
-    val vwTrainParams = getTrainVwParams(vwTrainParamMap, point)
-    val vwTestParams = getTestVwParams(vwTestParamMap, point)
-
-    val vwTrainingFile = SparkFiles.get(vwTrainCacheFilename)
-    val vwTestFile = SparkFiles.get(vwTestCacheFilename)
-
-    // Initialize the model file on the filesystem.  Just reserve a unique filename.
+    // Initialize the model file on the filesystem.  Reserve a unique filename.
     val modelFile = FileUtil.tempFile(s"model.vw")
 
     // Train
+    val vwTrainingFile = SparkFiles.get(vwTrainCacheFilename)
+    val vwTrainParams = getTrainVwParams(vwTrainParamMap, point)
     val vwTrainingProcess = VwProcess(s"-f ${modelFile.getAbsolutePath} --cache_file $vwTrainingFile $vwTrainParams")
     logInfo(s"Executing training: ${vwTrainingProcess.toString}")
     val vwTrainResult = vwTrainingProcess()
@@ -44,6 +57,8 @@ class VwHoldoutObjective(
     assert(vwTrainResult.exitCode == 0, s"VW Training exited with non-zero exit code s${vwTrainResult.exitCode}")
 
     // Test
+    val vwTestFile = SparkFiles.get(vwTestCacheFilename)
+    val vwTestParams = getTestVwParams(vwTestParamMap, point)
     val vwTestProcess = VwProcess(s"-t -i ${modelFile.getAbsolutePath} --cache_file $vwTestFile $vwTestParams")
     logInfo(s"Executing testing: ${vwTestProcess.toString}")
     val vwTestResult = vwTestProcess()

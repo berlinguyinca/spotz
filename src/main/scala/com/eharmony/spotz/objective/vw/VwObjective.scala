@@ -1,10 +1,7 @@
 package com.eharmony.spotz.objective.vw
 
 import com.eharmony.spotz.objective.SparkObjective
-import com.eharmony.spotz.space.Point
 import org.apache.spark.SparkContext
-
-import scala.collection.mutable
 
 /**
   * @author vsuthichai

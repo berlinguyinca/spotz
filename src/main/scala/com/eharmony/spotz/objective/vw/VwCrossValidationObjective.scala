@@ -1,7 +1,7 @@
 package com.eharmony.spotz.objective.vw
 
+import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.SparkObjective
-import com.eharmony.spotz.space.Point
 import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.{SparkContext, SparkFiles}
 
