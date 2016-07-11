@@ -6,9 +6,26 @@ Spark to perform its distributed computation.  A broad set of optimization
 algorithms have been implemented to solve for the hyperparameter values
 of an objective function that you specify.
 
+## Optimization Algorithms
+
+Currently the following solvers have been implemented.
+
+* Random Search
+* Grid Search
+
+## Usage
+
+Using this framework consists of writing the following boilerplate code:
+
+1. Defining the objective function
+2. Defining the space of hyperparameter values that you wish to search on.
+3. Selecting the solver.
+
 ## Objective Function Trait
 
-Defining your own objective function
+Define your own objective function.  The Branin-Hoo function is used here
+as a simple objective function example.  You can read more about it here:
+<http://www.sfu.ca/~ssurjano/branin.html>
 
 ```scala
 import com.eharmony.spotz.Preamble.Point
