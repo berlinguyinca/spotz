@@ -12,20 +12,19 @@ Currently the following solvers have been implemented:
 
 * [Random Search](https://en.wikipedia.org/wiki/Random_search)
 * [Grid Search](https://en.wikipedia.org/wiki/Grid_search_method)
-* [Particle Swarm](https://en.wikipedia.org/wiki/Particle_swarm_optimization) TODO
 
 ## Usage
 
 Using this framework consists of writing the following boilerplate code:
 
-1. Defining the objective function
-2. Defining the space of hyperparameter values that you wish to search on.
+1. Define the objective function
+2. Define the space of hyperparameter values that you wish to search.
 3. Selecting the solver.
 
 ## Objective Function Trait
 
-Define your own objective function.  Note that the objective function trait is 
-type parameterized ```[P, L]``` for the point and the loss.  
+Define your objective function by implementing the ```Objective[P, L]```
+trait.
 
 ```scala
 trait Objective[P, L]  {
@@ -33,12 +32,14 @@ trait Objective[P, L]  {
 }
 ```
 
-This function must simply implement the ```apply(point: P): L``` method of that 
-trait.  The point type parameter is an abstract representation of the current 
-hyperparameter values and is passed into the trait through the apply method.  
-The loss is the value returned from executing the objective function.  The 
-framework default implementation provides a ```Point``` class for the P type 
-parameter and uses ```Double``` as the loss value.  
+Note that the objective function trait is type parameterized ```[P, L]``` for
+the point and the loss.  This function must simply implement the
+```apply(point: P): L``` method of that trait.  The point type parameter is an
+abstract representation of the current hyperparameter values and is passed
+into the trait through the apply method.  The loss is the value returned from
+executing the objective function.  The framework default implementation
+provides a ```Point``` class for the ```P``` type parameter and uses
+```Double``` as the loss value.
 
 The Branin-Hoo function is shown here as a test object function
 example.  Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
@@ -51,7 +52,7 @@ class BraninObjective extends Objective[Point, Double] {
   val r = 6
   val s = 10
   val t = 1 / (8 * Pi)
-  
+
  /**
    *  Input Domain:
    *  This function is usually evaluated on
@@ -74,7 +75,7 @@ class BraninObjective extends Objective[Point, Double] {
 
 ## Hyperparameter Space
 
-Define the space of hyperparameter values that you desire to search on.  TODO
+Define the space of hyperparameter values that you desire to search.  TODO
 
 ## Choose Solver
 
@@ -89,20 +90,19 @@ val optimizer = new RandomSearch[Point, Double](sparkContext, stopStrategy)
 
 ### Stop Strategies
 
-Currently, there are two ways to possible stopping criteria, maximum number
-of trials and/or a maximum time duration.
+Currently, there are few ways to specify stopping criteria:
 
-1. Stopping after maximum time duration:
+* Stopping after maximum time duration:
 ```scala
 StopStrategy.stopAfterMaxDuration(maxDuration)
 ```
 
-2. Stopping after maximum number of trials:
+* Stopping after maximum number of trials:
 ```scala
 StopStrategy.stopAfterMaxTrials(maxTrials)
 ```
 
-3. Stopping after a maximum number of trials or a maximum time duration:
+* Stopping after a maximum number of trials or a maximum time duration:
 ```scala
 StopStrategy.stopAfterMaxTrialsOrMaxDuration(maxTrials, maxDuration)
 ```
@@ -151,4 +151,3 @@ val optimizer = new RandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 sc.stop()
 ```
-
