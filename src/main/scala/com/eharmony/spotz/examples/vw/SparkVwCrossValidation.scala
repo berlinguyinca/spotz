@@ -29,8 +29,8 @@ object SparkVwCrossValidation {
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new RandomSpace[Point](seed = 0, Map(
-      ("l", new Uniform(0, 1)),
+    val space = new RandomSpace[Point](Map(
+      ("l",  new Uniform(0, 1)),
       ("l2", new Uniform(0, 0.2))
     ))
 

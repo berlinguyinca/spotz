@@ -8,8 +8,8 @@ import scala.util.Random
   * @author vsuthichai
   */
 case class RandomSpace[P](
-    seed: Long,
-    params: Map[String, SamplingFunction[_]])
+    params: Map[String, SamplingFunction[_]],
+    seed: Long = 0L)
     (implicit factory: Map[String, _] => P)
   extends Space[P] {
 

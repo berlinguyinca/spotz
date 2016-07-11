@@ -5,8 +5,6 @@ import com.eharmony.spotz.optimizer.StopStrategy
 import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
-import scala.util.Random
-
 /**
   * @author vsuthichai
   */
@@ -17,8 +15,7 @@ object BraninMaxTrials {
 
     val sc = new SparkContext(new SparkConf().setAppName("Branin Max Trials"))
 
-    val seed = Random.nextLong()
-    val space = new RandomSpace[Point](seed, Map(
+    val space = new RandomSpace[Point](Map(
       ("x1", new Uniform(-5, 10)),
       ("x2", new Uniform(0, 15))
     ))

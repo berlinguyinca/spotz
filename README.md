@@ -12,6 +12,7 @@ Currently the following solvers have been implemented:
 
 * [Random Search](https://en.wikipedia.org/wiki/Random_search)
 * [Grid Search](https://en.wikipedia.org/wiki/Grid_search_method)
+* More?
 
 ## Usage
 
@@ -81,7 +82,8 @@ Define the space of hyperparameter values that you desire to search.  TODO
 
 Select the algorithm of your choice to perform the optimization.  Some
 algorithms may require defining a stopping strategy.  This states when you'd
-like the solver to stop searching for the best hyperparameter values.
+like the solver to stop searching the defined hyperparameter space for the 
+best hyperparameter values.
 
 ```scala
 val stopStrategy = StopStrategy.stopAfterMaxTrials(maxTrials)
@@ -118,7 +120,7 @@ import com.eharmony.spotz.objective.Objective
 
 import scala.math._
 
-class BraninObjective[P <: Point] extends Objective[P, Double] {
+class BraninObjective extends Objective[Point, Double] {
   val a = 1
   val b = 5.1 / (4 * pow(Pi, 2))
   val c = 5 / Pi
@@ -126,7 +128,7 @@ class BraninObjective[P <: Point] extends Objective[P, Double] {
   val s = 10
   val t = 1 / (8 * Pi)
 
-  override def apply(point: P): Double = {
+  override def apply(point: Point): Double = {
     val x1 = point.get[Double]("x1")
     val x2 = point.get[Double]("x2")
 

@@ -28,7 +28,7 @@ object SparkVwHoldout {
       vwTestSetPath = vwTestPath,
       vwTestParamsString = Option("--loss_function logistic"))
 
-    val space = new RandomSpace[Point](seed = 0, Map(
+    val space = new RandomSpace[Point](Map(
       ("l", new Uniform(0, 1))
     ))
 

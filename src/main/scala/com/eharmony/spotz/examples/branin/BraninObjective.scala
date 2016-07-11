@@ -8,7 +8,7 @@ import scala.math._
 /**
   * @author vsuthichai
   */
-class BraninObjective[P <: Point] extends Objective[P, Double] {
+class BraninObjective extends Objective[Point, Double] {
   val a = 1
   val b = 5.1 / (4 * pow(Pi, 2))
   val c = 5 / Pi
@@ -26,7 +26,7 @@ class BraninObjective[P <: Point] extends Objective[P, Double] {
    * @param point
    * @return a Double which is the result of evaluating the Branin function
    */
-  override def apply(point: P): Double = {
+  override def apply(point: Point): Double = {
     val x1 = point.get[Double]("x1")
     val x2 = point.get[Double]("x2")
 
