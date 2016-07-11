@@ -16,6 +16,9 @@ import com.eharmony.spotz.objective.Objective
 
 import scala.math._
 
+/**
+  * http://www.sfu.ca/~ssurjano/branin.html
+  */
 class BraninObjective[P <: Point] extends Objective[P, Double] {
   val a = 1
   val b = 5.1 / (4 * pow(Pi, 2))
@@ -41,7 +44,7 @@ class BraninObjective[P <: Point] extends Objective[P, Double] {
     a * pow(x2 - b*pow(x1, 2) + c*x1 - r, 2) + s*(1-t)*cos(x1) + s
   }
 }
-
+```
 
 ## Boilerplate
 ```scala
@@ -59,3 +62,4 @@ val stopStrategy = StopStrategy.stopAfterMaxTrials(maxTrials)
 val optimizer = new RandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 ```
+
