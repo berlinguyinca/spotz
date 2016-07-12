@@ -4,13 +4,14 @@ import com.eharmony.spotz.objective.Objective
 import org.apache.spark.SparkContext
 
 import scala.math.Ordering
+import scala.reflect.ClassTag
 
 /**
  * @author vsuthichai
  */
 trait Optimizer[P, L, -S <: Space[P], +R <: OptimizerResult[P, L]] extends Serializable {
-  def minimize(objective: Objective[P, L], space: S): R
-  def maximize(objective: Objective[P, L], space: S): R
+  def minimize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R
+  def maximize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R
 }
 
 trait BaseOptimizer[P, L, -S <: Space[P], +R <: OptimizerResult[P, L]] extends Optimizer[P, L, S, R] {
@@ -20,15 +21,16 @@ trait BaseOptimizer[P, L, -S <: Space[P], +R <: OptimizerResult[P, L]] extends O
   def min(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.min(p1, p2)
   def max(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.max(p1, p2)
 
-  override def minimize(objective: Objective[P, L], space: S): R = {
+  override def minimize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R = {
     optimize(objective, space, min)
   }
 
-  override def maximize(objective: Objective[P, L], space: S): R = {
+  override def maximize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R = {
     optimize(objective, space, max)
   }
 
-  protected def optimize(objective: Objective[P, L], space: S, reducer: Reducer[(P, L)]): R
+  protected def optimize(objective: Objective[P, L], space: S, reducer: Reducer[(P, L)])
+                        (implicit c: ClassTag[P], p: ClassTag[L]): R
 }
 
 trait SparkBaseOptimizer[P, L, -S <: Space[P], +R <: OptimizerResult[P, L]] extends BaseOptimizer[P, L, S, R] {

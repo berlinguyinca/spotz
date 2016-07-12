@@ -3,6 +3,9 @@ package com.eharmony.spotz.backend.spark
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.random.RandomSpace
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 /**
   * @author vsuthichai
@@ -42,13 +45,26 @@ trait SparkFunctions {
                             reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
     assert(batchSize > 0, "batchSize must be greater than 0")
 
-    sc.parallelize(startIndex until (startIndex + batchSize)).mapPartitions { partition =>
+    val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
+
+    val pointAndLossRDD = rdd.mapPartitions { partition =>
       partition.map { trial =>
         // Create new space with new seed to avoid every executor having the same rng state.
-        val rngModifiedSpace = space.seed(trial)
+        val rngModifiedSpace = space.setSeed(space.seed + trial)
         val point = rngModifiedSpace.sample
         (point, objective(point))
       }
-    }.reduce(reducer)
+    }
+
+    pointAndLossRDD.reduce(reducer)
+  }
+
+  def bestPointAndLoss[P, L](gridPoints: Seq[P], objective: Objective[P, L], reducer: ((P, L), (P, L)) => (P, L))
+                            (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
+    assert(gridPoints.nonEmpty, "No grid points specified")
+
+    val rdd = sc.parallelize(gridPoints)
+    val pointAndLossRDD = rdd.map(point => (point, objective(point)))
+    pointAndLossRDD.reduce(reducer)
   }
 }

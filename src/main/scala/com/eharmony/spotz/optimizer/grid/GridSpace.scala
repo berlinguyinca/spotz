@@ -31,12 +31,10 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[
   }
 
   val max = gridLengths.product
-  var i = -1
+  var i = 0
 
   override def sample: P = {
-    i += 1
-
-    if (i >= max)
+    if (isExhausted)
       throw new RuntimeException("Grid space has been exhausted of all values.")
 
     val gridIndices = gridProperties.map { case GridProperty(factor, length) => (i / factor) % length }
@@ -44,8 +42,19 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[
       (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex))
     }.toMap
 
+    i += 1
+
     factory(hyperParamValues)
   }
+
+  override def sample(howMany: Int): Iterable[P] = {
+    if (isExhausted)
+      throw new RuntimeException("Grid space has been exhausted of all values.")
+
+    Seq.fill(scala.math.min(howMany, max - i))(sample)
+  }
+
+  def isExhausted: Boolean = i >= max
 }
 
 case class GridRow(label: String, values: Seq[_])

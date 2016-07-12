@@ -8,6 +8,7 @@ import org.joda.time.{DateTime, Duration}
 
 import scala.annotation.tailrec
 import scala.math.Ordering
+import scala.reflect.ClassTag
 
 /**
   * @author vsuthichai
@@ -22,7 +23,8 @@ class RandomSearch[P, L](
 
   override def optimize(objective: Objective[P, L],
                         space: RandomSpace[P],
-                        reducer: Reducer[(P, L)]): RandomSearchResult[P, L] = {
+                        reducer: Reducer[(P, L)])
+                       (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
 
     val startTime = DateTime.now()
     val firstPoint = space.sample
@@ -39,7 +41,8 @@ class RandomSearch[P, L](
                                  startTime: DateTime,
                                  bestPointSoFar: P,
                                  bestLossSoFar: L,
-                                 trialsSoFar: Long): RandomSearchResult[P, L] = {
+                                 trialsSoFar: Long)
+                                (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
 
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)

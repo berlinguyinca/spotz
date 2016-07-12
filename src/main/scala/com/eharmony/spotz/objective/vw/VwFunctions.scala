@@ -42,6 +42,7 @@ trait VwFunctions {
 
   def getTestVwParams(vwParamMap: Map[String, String], point: Point): String = {
     vwParamMapToString(vwParamMap)
+    // vwParamMapToString(mergeVwParams(vwParamMap, point))
   }
 
   def parseVwArgs(args: Option[String]) = VwArgParser(args)

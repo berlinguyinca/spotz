@@ -7,7 +7,7 @@ import org.joda.time.{DateTime, Duration}
 /**
   * @author vsuthichai
   */
-class GridSearchResult[P, L](
+case class GridSearchResult[P, L](
     bestPoint: P,
     bestLoss: L,
     startTime: DateTime,
