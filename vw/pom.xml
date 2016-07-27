@@ -9,14 +9,13 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>spotz-examples</artifactId>
+    <artifactId>spotz-vw</artifactId>
     <packaging>jar</packaging>
-    <name>Spark HyperParameter Optimization Examples</name>
-    <description>A jar file of examples for use with the Spotz library</description>
+    <name>Spark HyperParameter Optimization for Vowpal Wabbit</name>
+    <description>Spark HyperParameter Optimization for Vowpal Wabbit</description>
     <url>https://github.com/eHarmony/spotz.git</url>
 
     <properties>
-        <scallop.version>2.0.0</scallop.version>
     </properties>
 
     <dependencies>
@@ -26,36 +25,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.eharmony</groupId>
-            <artifactId>spotz-vw</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_${scala.major.version}</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.joda</groupId>
-            <artifactId>joda-convert</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.rogach</groupId>
-            <artifactId>scallop_${scala.major.version}</artifactId>
-            <version>${scallop.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-reflect</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 

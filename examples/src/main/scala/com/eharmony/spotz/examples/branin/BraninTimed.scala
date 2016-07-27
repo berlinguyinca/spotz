@@ -1,6 +1,5 @@
 package com.eharmony.spotz.examples.branin
 
-
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
 import com.eharmony.spotz.optimizer.random.{RandomSpace, SparkRandomSearch}

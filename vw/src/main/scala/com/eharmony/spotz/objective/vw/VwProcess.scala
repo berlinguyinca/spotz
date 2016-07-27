@@ -1,7 +1,7 @@
 package com.eharmony.spotz.objective.vw
 
-import com.eharmony.spotz.util.{ProcessResult, CommandLineProcess}
 import com.eharmony.spotz.util.RegexUtil.floatingPointRegex
+import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
 
 /**
  * @author vsuthichai
