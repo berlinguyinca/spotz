@@ -1,39 +1,38 @@
-package com.eharmony.spotz.objective.vw
+package com.eharmony.spotz.objective.vw.util
 
 import java.io.{File, PrintWriter}
 
+import com.eharmony.spotz.objective.vw.VwProcess
 import com.eharmony.spotz.util.FileUtil
-import org.apache.spark.{SparkContext, SparkFiles}
+import com.eharmony.spotz.util.file.{FileFunctions, FileSystemFunctions, SparkFileFunctions}
 
 import scala.collection.mutable
 import scala.io.Source
-import scala.language.postfixOps
 
 /**
   * @author vsuthichai
   */
-trait BaseVwDatasetFunctions {
-  def cacheDataset(inputIterator: Iterator[String]): File = {
-    cacheDataset(inputIterator, "dataset.cache")
-  }
+trait FSVwDatasetFunctions extends VwDatasetFunctions with FileSystemFunctions {
+  override def getCache(name: String) = get(name)
+}
 
-  def cacheDataset(inputIterable: Iterable[String]): File = {
-    cacheDataset(inputIterable.toIterator)
-  }
+trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions {
+  override def getCache(name: String) = get(name)
+}
 
-  def cacheDataset(inputPath: String): File = {
-    val dataset = Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines()
-    cacheDataset(dataset)
-  }
+trait VwDatasetFunctions extends FileFunctions {
+  def saveAsCache(inputIterator: Iterator[String]): String = saveAsCache(inputIterator, "dataset.cache")
+  def saveAsCache(inputIterable: Iterable[String]): String = saveAsCache(inputIterable.toIterator)
+  def saveAsCache(inputPath: String): String = saveAsCache(Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines())
 
-  def cacheDataset(vwDataset: Iterator[String], vwCacheFilename: String): File = {
+  def saveAsCache(vwDataset: Iterator[String], vwCacheFilename: String): String = {
     // Write VW dataset to a temporary file
     // TODO: Stream this to VW later.
     val vwDatasetFile = FileUtil.tempFile("dataset.vw")
     val vwDatasetWriter = new PrintWriter(vwDatasetFile)
     vwDataset.foreach(line => vwDatasetWriter.println(line))
     vwDatasetWriter.close()
-    vwDatasetFile.delete()
+    // vwDatasetFile.delete()
 
     // Create a VW cache file from the dataset
     val vwCacheFile = FileUtil.tempFile(vwCacheFilename)
@@ -43,41 +42,11 @@ trait BaseVwDatasetFunctions {
     assert(vwCacheResult.exitCode == 0,
       s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
 
-    vwCacheFile
-  }
-}
-
-trait VwDatasetFunctions extends BaseVwDatasetFunctions {
-  def saveDataset(vwDataset: Iterator[String]): String
-  def getDataset(vwCacheFilename: String): File
-}
-
-trait FileSystemVwDatasetFunctions extends VwDatasetFunctions {
-  private[this] val cacheFiles = Map[String, String]()
-
-  override def saveDataset(vwDataset: Iterator[String]): String = {
-    val vwCacheFile = super.cacheDataset(vwDataset)
-    cacheFiles + ((vwCacheFile.getName, vwCacheFile.getAbsolutePath))
+    save(vwCacheFile)
     vwCacheFile.getName
   }
 
-  override def getDataset(vwCacheFilename: String): File = {
-    new File(cacheFiles(vwCacheFilename))
-  }
-}
-
-trait SparkVwDatasetFunctions extends VwDatasetFunctions {
-  val sparkContext: SparkContext
-
-  override def saveDataset(vwDataset: Iterator[String]): String = {
-    val vwCacheFile = super.cacheDataset(vwDataset)
-    sparkContext.addFile(vwCacheFile.getAbsolutePath)
-    vwCacheFile.getName
-  }
-
-  override def getDataset(vwCacheFilename: String): File = {
-    new File(SparkFiles.get(vwCacheFilename))
-  }
+  def getCache(name: String): File = get(name)
 }
 
 trait VwCrossValidation extends VwDatasetFunctions {
@@ -124,20 +93,14 @@ trait VwCrossValidation extends VwDatasetFunctions {
         case (line, lineNumber) if lineNumber % folds == fold => false
       }
 
-      val train = trainWithLineNumber.map { case (line, lineNumber) => line } toIterator
-      val vwTrainingCacheFile = cacheDataset(train, s"train-fold-$fold.cache")
+      val train = trainWithLineNumber.map { case (line, lineNumber) => line }.toIterator
+      val vwTrainingCacheFilename = saveAsCache(train, s"train-fold-$fold.cache")
 
-      val test = testWithLineNumber.map { case (line, lineNumber) => line } toIterator
-      val vwTestCacheFile = cacheDataset(test, s"test-fold-$fold.cache")
+      val test = testWithLineNumber.map { case (line, lineNumber) => line }.toIterator
+      val vwTestCacheFilename = saveAsCache(test, s"test-fold-$fold.cache")
 
       // Add it to the map which will be referenced later on the executor
-      map += ((fold, (vwTrainingCacheFile.getName, vwTestCacheFile.getName)))
+      map + ((fold, (vwTrainingCacheFilename, vwTestCacheFilename)))
     }.toMap
   }
-}
-
-trait FsVwCrossValidationFunctions extends VwCrossValidation with FileSystemVwDatasetFunctions
-
-trait SparkVwCrossValidationFunctions extends VwCrossValidation with SparkVwDatasetFunctions {
-  val sparkContext: SparkContext
 }

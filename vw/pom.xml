@@ -11,7 +11,7 @@
 
     <artifactId>spotz-vw</artifactId>
     <packaging>jar</packaging>
-    <name>Spark HyperParameter Optimization for Vowpal Wabbit</name>
+    <name>Spotz for Vowpal Wabbit</name>
     <description>Spark HyperParameter Optimization for Vowpal Wabbit</description>
     <url>https://github.com/eHarmony/spotz.git</url>
 
@@ -19,6 +19,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.eharmony</groupId>
             <artifactId>spotz-core</artifactId>

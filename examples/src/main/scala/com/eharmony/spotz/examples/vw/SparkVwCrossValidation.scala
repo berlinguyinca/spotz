@@ -2,7 +2,7 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.Preamble
 import Preamble._
-import com.eharmony.spotz.objective.vw.{BaseVwCrossValidationObjective, FsVwCrossValidationFunctions, SparkVwCrossValidationFunctions}
+import com.eharmony.spotz.objective.vw._
 import com.eharmony.spotz.optimizer.grid.{GridSearch, GridSpace, ParGridSearch}
 import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
 import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, SparkRandomSearch}
@@ -26,14 +26,13 @@ abstract class BaseVwCrossValidation {
     val stopStrategy = StopStrategy.stopAfterMaxTrials(trials)
     val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
 
-    val objective = new BaseVwCrossValidationObjective(
+    val objective = new SparkVwCrossValidationObjective(
+      sc = sc,
       numFolds = folds,
       vwDatasetPath = vwDataset,
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestParamsString = Option("--loss_function logistic")
-    ) with SparkVwCrossValidationFunctions {
-      @transient val sparkContext = sc
-    }
+    )
 
     val space = new RandomSpace[Point](Map(
       ("l",  new UniformDouble(0, 1)),
@@ -60,11 +59,11 @@ abstract class BaseVwCrossValidation {
     */
     val optimizer = new ParGridSearch[Point, Double]()
 
-    val objective = new BaseVwCrossValidationObjective(
+    val objective = new VwCrossValidationObjective(
       numFolds = folds,
       vwDatasetPath = vwDataset,
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
-      vwTestParamsString = Option("--loss_function logistic")) with FsVwCrossValidationFunctions
+      vwTestParamsString = Option("--loss_function logistic"))
 
     val space = new GridSpace[Point](Map(
       ("l", 1 to 3),

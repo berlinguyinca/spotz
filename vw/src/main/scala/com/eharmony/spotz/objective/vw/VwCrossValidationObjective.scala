@@ -2,6 +2,7 @@ package com.eharmony.spotz.objective.vw
 
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
+import com.eharmony.spotz.objective.vw.util.{FSVwDatasetFunctions, SparkVwDatasetFunctions, VwCrossValidation}
 import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.SparkContext
 
@@ -11,23 +12,55 @@ import scala.io.Source
   * @author vsuthichai
   */
 class SparkVwCrossValidationObjective(
-    @transient val sparkContext: SparkContext,
+    @transient val sc: SparkContext,
     numFolds: Int,
     vwDataset: Iterator[String],
     vwTrainParamsString: Option[String],
     vwTestParamsString: Option[String])
-  extends BaseVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
-  with SparkVwDatasetFunctions
+  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
+    with SparkVwDatasetFunctions {
+
+  def this(sc: SparkContext,
+           numFolds: Int,
+           vwDataset: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
+  }
+
+  def this(sc: SparkContext,
+           numFolds: Int,
+           vwDatasetPath: String,
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+  }
+}
 
 class VwCrossValidationObjective(
     numFolds: Int,
     vwDataset: Iterator[String],
     vwTrainParamsString: Option[String],
     vwTestParamsString: Option[String])
-  extends BaseVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
-  with FileSystemVwDatasetFunctions
+  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
+    with FSVwDatasetFunctions {
 
-abstract class BaseVwCrossValidationObjective(
+  def this(numFolds: Int,
+           vwDataset: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
+  }
+
+  def this(numFolds: Int,
+           vwDatasetPath: String,
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+  }
+}
+
+abstract class AbstractVwCrossValidationObjective(
     val numFolds: Int,
     val vwDataset: Iterator[String],
     vwTrainParamsString: Option[String],
@@ -72,8 +105,8 @@ abstract class BaseVwCrossValidationObjective(
     val avgLosses = (0 until numFolds).map { fold =>
       // Retrieve the training and test set cache for this fold.
       val (vwTrainFilename, vwTestFilename) = foldToVwCacheFiles(fold)
-      val vwTrainFile = getDataset(vwTrainFilename)
-      val vwTestFile = getDataset(vwTestFilename)
+      val vwTrainFile = getCache(vwTrainFilename)
+      val vwTestFile = getCache(vwTestFilename)
 
       // Initialize the model file on the filesystem.  Just reserve a unique filename.
       val modelFile = FileUtil.tempFile(s"model-fold-$fold.vw")

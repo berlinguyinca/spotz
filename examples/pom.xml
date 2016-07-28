@@ -11,7 +11,7 @@
 
     <artifactId>spotz-examples</artifactId>
     <packaging>jar</packaging>
-    <name>Spark HyperParameter Optimization Examples</name>
+    <name>Spotz Project Examples</name>
     <description>A jar file of examples for use with the Spotz library</description>
     <url>https://github.com/eHarmony/spotz.git</url>
 

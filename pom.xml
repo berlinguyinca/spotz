@@ -45,7 +45,7 @@
         <developer>
             <id>vsuthichai</id>
             <name>Victor Suthichai</name>
-            <email>victor.suthichai@gmail.com</email>
+            <email>vsuthichai@eharmony.com</email>
             <organization>eHarmony</organization>
             <organizationUrl>http://www.eharmony.com</organizationUrl>
         </developer>
@@ -72,7 +72,6 @@
         <vfs2.version>2.1</vfs2.version>
         <slf4j.version>1.7.21</slf4j.version>
         <logback.classic.version>1.1.7</logback.classic.version>
-        <scalatest.version>3.0.0-M15</scalatest.version>
         <scala.compat.version>${scala.major.version}</scala.compat.version>
     </properties>
 

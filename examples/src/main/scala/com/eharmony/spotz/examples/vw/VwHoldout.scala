@@ -1,28 +1,25 @@
 package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.Preamble._
-import com.eharmony.spotz.objective.vw.SparkVwHoldoutObjective
-import com.eharmony.spotz.optimizer.grid.{GridSpace, SparkGridSearch}
+import com.eharmony.spotz.objective.vw.VwHoldoutObjective
+import com.eharmony.spotz.optimizer.grid.{GridSpace, ParGridSearch}
+import com.eharmony.spotz.optimizer.random.{ParRandomSearch, RandomSpace}
 import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
-import com.eharmony.spotz.optimizer.random.{RandomSpace, SparkRandomSearch}
-import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * @author vsuthichai
   */
-object SparkVwHoldout {
+object VwHoldout {
 
   def randomSearch(args: Array[String]) = {
     val trials = args(1).toInt
     val vwTrainPath = args(2)
     val vwTestPath = args(3)
 
-    val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
     val stopStrategy = StopStrategy.stopAfterMaxTrials(trials)
-    val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
+    val optimizer = new ParRandomSearch[Point, Double](stopStrategy)
 
-    val objective = new SparkVwHoldoutObjective(
-      sc = sc,
+    val objective = new VwHoldoutObjective(
       vwTrainSetPath = vwTrainPath,
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestSetPath = vwTestPath,
@@ -34,7 +31,6 @@ object SparkVwHoldout {
     ))
 
     val result = optimizer.minimize(objective, space)
-    sc.stop()
     result
   }
 
@@ -43,11 +39,8 @@ object SparkVwHoldout {
     val vwTrainPath = args(2)
     val vwTestPath = args(3)
 
-    val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
-
-    val optimizer = new SparkGridSearch[Point, Double](sc)
-    val objective = new SparkVwHoldoutObjective(
-      sc = sc,
+    val optimizer = new ParGridSearch[Point, Double]()
+    val objective = new VwHoldoutObjective(
       vwTrainSetPath = vwTrainPath,
       vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
       vwTestSetPath = vwTestPath,
@@ -60,7 +53,6 @@ object SparkVwHoldout {
 
     // Minimize
     val result = optimizer.minimize(objective, space)
-    sc.stop()
     result
   }
 
