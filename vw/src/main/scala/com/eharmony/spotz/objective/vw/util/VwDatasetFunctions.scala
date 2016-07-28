@@ -3,8 +3,7 @@ package com.eharmony.spotz.objective.vw.util
 import java.io.{File, PrintWriter}
 
 import com.eharmony.spotz.objective.vw.VwProcess
-import com.eharmony.spotz.util.FileUtil
-import com.eharmony.spotz.util.file.{FileFunctions, FileSystemFunctions, SparkFileFunctions}
+import com.eharmony.spotz.util.{FileFunctions, FileSystemFunctions, FileUtil, SparkFileFunctions}
 
 import scala.collection.mutable
 import scala.io.Source

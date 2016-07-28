@@ -1,8 +1,7 @@
-package com.eharmony.spotz.util.file
+package com.eharmony.spotz.util
 
 import java.io.{File, PrintWriter}
 
-import com.eharmony.spotz.util.FileUtil
 import org.apache.spark.{SparkContext, SparkFiles}
 
 import scala.io.Source
