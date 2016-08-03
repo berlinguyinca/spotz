@@ -65,7 +65,7 @@ abstract class RandomSearch[P, L]
 }
 
 class ParRandomSearch[P, L]
-    (paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int = 100000)
+    (paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int = 1000000)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory) with ParallelFunctions
 

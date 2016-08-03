@@ -21,19 +21,19 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
   // Expand the entire grid space.  The memory required is linear in the sum of lengths of all the iterables
-  private[this] val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
+  private val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
 
   // pre-compute the length of each grid iterable, indexed into a Seq
-  private[this] val gridLengths = gridSpace.map { case (label, seq) => seq.length }
+  private val gridLengths = gridSpace.map { case (label, seq) => seq.length.toLong }
 
   // pre-compute the divisible factor and store along with the length inside GridProperty
   // http://phrogz.net/lazy-cartesian-product
-  private[this] val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l: Int, b) =>
+  private val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l, b) =>
     if (b.isEmpty) GridProperty(1L, l) +=: b
     else GridProperty(b.head.length * b.head.factor, l) +=: b
   }
 
-  val max = gridLengths.product.toLong
+  val max = gridLengths.product
 
   info(s"$max hyper parameter tuples found in GridSpace")
 
@@ -43,18 +43,16 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
     if (isExhausted)
       throw new NoSuchElementException("Grid space has been exhausted of all values.")
 
-    val gridIndices = gridProperties.map { case GridProperty(factor, length) => (i / factor) % length }
-    val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
-      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex.toInt))
-    }.toMap
+    val point = apply(i)
 
     i += 1
 
-    factory(hyperParamValues)
+    point
   }
 
   override def sample(howMany: Int): Iterable[P] = {
-    assert(howMany > 0, "Sample size must be greater than 0")
+    if (howMany < 1)
+      throw new IllegalArgumentException("Sample size must be greater than 0")
 
     if (isExhausted)
       throw new NoSuchElementException("Grid space has been exhausted of all values.")
@@ -63,7 +61,21 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
   }
 
   def isExhausted: Boolean = i >= max
+
+  def length: Long = max
+
+  def apply(idx: Long): P = {
+    if (idx < 0 || idx >= max)
+      throw new IndexOutOfBoundsException(idx.toString)
+
+    val gridIndices = gridProperties.map { case GridProperty(factor, length) => (idx / factor) % length }
+    val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
+      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex.toInt))
+    }.toMap
+
+    factory(hyperParamValues)
+  }
 }
 
 case class GridRow(label: String, values: Seq[_])
-case class GridProperty(factor: Long, length: Int)
+case class GridProperty(factor: Long, length: Long)

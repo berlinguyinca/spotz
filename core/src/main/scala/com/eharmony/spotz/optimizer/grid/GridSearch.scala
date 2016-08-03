@@ -54,22 +54,21 @@ extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
 
     LOG.info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
 
-    space.isExhausted match {
+    trialsSoFar >= space.length match {
       case true =>
         GridSearchResult(bestPointSoFar, bestLossSoFar, startTime, endTime, trialsSoFar, elapsedTime)
       case false =>
-        val points = space.sample(trialBatchSize)
-        val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar), bestPointAndLoss(points.toSeq, objective, reducer))
-
-        gridSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + points.size)
+        val batchSize = scala.math.min(space.length - trialsSoFar, trialBatchSize)
+        val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar), bestPointAndLoss(trialsSoFar, batchSize, objective, space, reducer))
+        gridSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }
   }
 }
 
-class ParGridSearch[P, L](paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 100000)
+class ParGridSearch[P, L](paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 1000000)
                          (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with ParallelFunctions
 
-class SparkGridSearch[P, L](@transient val sc: SparkContext, paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 100000)
+class SparkGridSearch[P, L](@transient val sc: SparkContext, paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 1000000)
                            (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with SparkFunctions
