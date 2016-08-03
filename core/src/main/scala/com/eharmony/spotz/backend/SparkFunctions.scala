@@ -37,7 +37,7 @@ trait SparkFunctions extends BackendFunctions {
     *                generated
     * @return the best point with the best loss
     */
-  override def bestRandomPoint[P, L](startIndex: Long,
+  protected[backend] override def bestRandomPoint[P, L](startIndex: Long,
                                      batchSize: Long,
                                      objective: Objective[P, L],
                                      space: RandomSpace[P],
@@ -58,7 +58,7 @@ trait SparkFunctions extends BackendFunctions {
     pointAndLossRDD.reduce(reducer)
   }
 
-  override def bestPointAndLoss[P, L](gridPoints: Seq[P],
+  protected[backend] override def bestPointAndLoss[P, L](gridPoints: Seq[P],
                                       objective: Objective[P, L],
                                       reducer: ((P, L), (P, L)) => (P, L))
                                      (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {

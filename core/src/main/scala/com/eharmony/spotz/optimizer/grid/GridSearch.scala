@@ -3,6 +3,7 @@ package com.eharmony.spotz.optimizer.grid
 import com.eharmony.spotz.backend.{BackendFunctions, ParallelFunctions, SparkFunctions}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.AbstractOptimizer
+import com.eharmony.spotz.util.{DurationUtils, Logger}
 import org.apache.spark.SparkContext
 import org.joda.time.{DateTime, Duration}
 
@@ -14,16 +15,27 @@ import scala.reflect.ClassTag
   * @author vsuthichai
   */
 abstract class GridSearch[P, L]
-    (trialBatchSize: Int = 100)
-    (implicit val ord: Ordering[(P, L)])
-  extends AbstractOptimizer[P, L, GridSpace[P], GridSearchResult[P, L]]
+    (paramSpace: Map[String, Iterable[_]], trialBatchSize: Int)
+    (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
+extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
     with BackendFunctions {
 
-  override def optimize(objective: Objective[P, L],
-                        space: GridSpace[P],
-                        reducer: Reducer[(P, L)])
-                       (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
+  val LOG = Logger[this.type]()
 
+  def minimize(objective: Objective[P, L], space: Map[String, Iterable[_]])
+              (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
+    optimize(objective, min)
+  }
+
+  def maximize(objective: Objective[P, L], space: Map[String, Iterable[_]])
+              (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
+    optimize(objective, max)
+  }
+
+  override protected def optimize(objective: Objective[P, L],
+                                  reducer: Reducer[(P, L)])
+                                 (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
+    val space = new GridSpace[P](paramSpace)
     val startTime = DateTime.now()
     val firstPoint = space.sample
     val firstLoss = objective(firstPoint)
@@ -33,12 +45,14 @@ abstract class GridSearch[P, L]
   }
 
   @tailrec
-  private[this] def gridSearch(objective: Objective[P, L], space: GridSpace[P], reducer: Reducer[(P, L)],
-                               startTime: DateTime, bestPointSoFar: P, bestLossSoFar: L, trialsSoFar: Long)
-                              (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
+  private def gridSearch(objective: Objective[P, L], space: GridSpace[P], reducer: Reducer[(P, L)],
+                         startTime: DateTime, bestPointSoFar: P, bestLossSoFar: L, trialsSoFar: Long)
+                        (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
 
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)
+
+    LOG.info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
 
     space.isExhausted match {
       case true =>
@@ -46,13 +60,16 @@ abstract class GridSearch[P, L]
       case false =>
         val points = space.sample(trialBatchSize)
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar), bestPointAndLoss(points.toSeq, objective, reducer))
-        gridSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar)
+
+        gridSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + points.size)
     }
   }
 }
 
-class ParGridSearch[P, L](trialBatchSize: Int = 100)(implicit ord: Ordering[(P, L)])
-  extends GridSearch[P, L](trialBatchSize)(ord) with ParallelFunctions
+class ParGridSearch[P, L](paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 100000)
+                         (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
+  extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with ParallelFunctions
 
-class SparkGridSearch[P, L](@transient val sc: SparkContext, trialBatchSize: Int = 100)(implicit ord: Ordering[(P, L)])
-  extends GridSearch[P, L](trialBatchSize)(ord) with SparkFunctions
+class SparkGridSearch[P, L](@transient val sc: SparkContext, paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 100000)
+                           (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
+  extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with SparkFunctions

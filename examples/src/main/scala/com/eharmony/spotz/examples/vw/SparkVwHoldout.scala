@@ -10,6 +10,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * @author vsuthichai
   */
+/*
 object SparkVwHoldout {
 
   def randomSearch(args: Array[String]) = {
@@ -72,3 +73,4 @@ object SparkVwHoldout {
     println(result)
   }
 }
+*/

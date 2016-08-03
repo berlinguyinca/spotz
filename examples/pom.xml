@@ -25,6 +25,10 @@
             <artifactId>scala-library</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.eharmony</groupId>
             <artifactId>spotz-core</artifactId>
             <version>${project.version}</version>

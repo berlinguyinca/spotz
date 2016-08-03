@@ -1,15 +1,14 @@
 package com.eharmony.spotz.optimizer.random
 
-import com.eharmony.spotz.optimizer.{SamplerFunction, Space}
+import com.eharmony.spotz.optimizer.{RandomSampler, Space}
 
 import scala.util.Random
 
 /**
   * @author vsuthichai
   */
-case class RandomSpace[P](
-    params: Map[String, SamplerFunction[_]],
-    seed: Long = 0L)
+case class RandomSpace[P]
+    (params: Map[String, RandomSampler[_]], seed: Long = 0L)
     (implicit factory: Map[String, _] => P)
   extends Space[P] {
 
@@ -20,7 +19,7 @@ case class RandomSpace[P](
   rng.nextDouble()
 
   override def sample: P = {
-    val sampledParams = params.map { case (label, sampler) => (label, sampler.apply(rng)) }
+    val sampledParams = params.map { case (label, sampler) => (label, sampler(rng)) }
     factory(sampledParams)
   }
 

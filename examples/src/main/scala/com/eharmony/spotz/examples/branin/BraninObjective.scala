@@ -2,14 +2,13 @@ package com.eharmony.spotz.examples.branin
 
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.util.Logging
 
 import scala.math._
 
 /**
   * @author vsuthichai
   */
-class BraninObjective extends Objective[Point, Double] with Logging {
+class BraninObjective extends Objective[Point, Double] {
   val a = 1
   val b = 5.1 / (4 * pow(Pi, 2))
   val c = 5 / Pi

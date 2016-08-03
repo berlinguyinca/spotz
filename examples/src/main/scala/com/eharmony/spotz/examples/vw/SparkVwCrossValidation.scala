@@ -10,6 +10,7 @@ import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, SparkRand
 /**
   * @author vsuthichai
   */
+/*
 abstract class BaseVwCrossValidation {
   def randomSearch(trials: Int, folds: Int, vwDataset: String) {
 
@@ -90,7 +91,7 @@ object VwCrossValidation {
 
   }
 }
-/*
+
 object SparkVwCrossValidation {
   import org.apache.spark.{SparkConf, SparkContext}
 

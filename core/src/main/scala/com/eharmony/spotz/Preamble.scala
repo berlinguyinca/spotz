@@ -1,5 +1,7 @@
 package com.eharmony.spotz
 
+import com.eharmony.spotz.optimizer.SamplerFunction
+
 import scala.math.Ordering
 import scala.language.implicitConversions
 
@@ -7,6 +9,14 @@ import scala.language.implicitConversions
   * @author vsuthichai
   */
 object Preamble {
+  // type SamplerFunctionOrIterable = SamplerFunction[_] with Iterable[_]
+
+  type neg[A] = A => Nothing
+  type union[T, U] = neg[neg[T] with neg[U]]
+  type doubleNeg[A] = neg[neg[A]]
+
+  type SamplerFunctionOrIterable = union[SamplerFunction[_], Iterable[_]]
+
   implicit object PointLossOrdering extends Ordering[(Point, Double)] {
     override def compare(x: (Point, Double), y: (Point, Double)): Int = {
       if (x._2 > y._2) 1

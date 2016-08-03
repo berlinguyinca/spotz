@@ -1,6 +1,7 @@
 package com.eharmony.spotz.optimizer.grid
 
 import com.eharmony.spotz.optimizer.Space
+import com.eharmony.spotz.util.Logging
 
 import scala.collection.mutable.ArrayBuffer
 import scala.language.postfixOps
@@ -14,7 +15,9 @@ import scala.language.postfixOps
   *
   * @author vsuthichai
   */
-class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[String, _]) => P) extends Space[P] {
+class GridSpace[P](gridParams: Map[String, Iterable[_]])
+                  (implicit factory: (Map[String, _]) => P) extends Space[P] with Logging {
+
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
   // Expand the entire grid space.  The memory required is linear in the sum of lengths of all the iterables
@@ -26,20 +29,23 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[
   // pre-compute the divisible factor and store along with the length inside GridProperty
   // http://phrogz.net/lazy-cartesian-product
   private[this] val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l: Int, b) =>
-    if (b.isEmpty) GridProperty(1, l) +=: b
+    if (b.isEmpty) GridProperty(1L, l) +=: b
     else GridProperty(b.head.length * b.head.factor, l) +=: b
   }
 
-  val max = gridLengths.product
-  var i = 0
+  val max = gridLengths.product.toLong
+
+  info(s"$max hyper parameter tuples found in GridSpace")
+
+  var i: Long = 0
 
   override def sample: P = {
     if (isExhausted)
-      throw new RuntimeException("Grid space has been exhausted of all values.")
+      throw new NoSuchElementException("Grid space has been exhausted of all values.")
 
     val gridIndices = gridProperties.map { case GridProperty(factor, length) => (i / factor) % length }
     val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
-      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex))
+      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex.toInt))
     }.toMap
 
     i += 1
@@ -48,14 +54,16 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])(implicit factory: (Map[
   }
 
   override def sample(howMany: Int): Iterable[P] = {
-    if (isExhausted)
-      throw new RuntimeException("Grid space has been exhausted of all values.")
+    assert(howMany > 0, "Sample size must be greater than 0")
 
-    Seq.fill(scala.math.min(howMany, max - i))(sample)
+    if (isExhausted)
+      throw new NoSuchElementException("Grid space has been exhausted of all values.")
+
+    Seq.fill(scala.math.min(howMany, (max - i).toInt))(sample)
   }
 
   def isExhausted: Boolean = i >= max
 }
 
 case class GridRow(label: String, values: Seq[_])
-case class GridProperty(factor: Int, length: Int)
+case class GridProperty(factor: Long, length: Int)

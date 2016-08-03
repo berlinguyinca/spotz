@@ -9,6 +9,7 @@ import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
 /**
   * @author vsuthichai
   */
+/*
 object VwHoldout {
 
   def randomSearch(args: Array[String]) = {
@@ -64,3 +65,4 @@ object VwHoldout {
     println(result)
   }
 }
+*/
