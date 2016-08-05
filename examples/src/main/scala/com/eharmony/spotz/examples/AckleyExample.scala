@@ -23,7 +23,7 @@ class AckleyObjective extends Objective[Point, Double] {
 trait AckleyExample {
   val objective = new AckleyObjective
   val stop = StopStrategy.stopAfterMaxDuration(Duration.standardSeconds(5))
-  val numBatchTrials = 1000000
+  val numBatchTrials = 500000
 
   def apply(): OptimizerResult[Point, Double]
 

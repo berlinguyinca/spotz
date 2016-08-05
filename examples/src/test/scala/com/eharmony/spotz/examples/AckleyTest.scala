@@ -7,12 +7,12 @@ import org.junit.{Ignore, Test}
   * @author vsuthichai
   */
 class AckleyTest {
-  @Ignore
+  @Test
   def testAckleyParRandomSearch() {
     val result = AckleyParRandomSearch()
     val point = result.bestPoint
 
-    assertEquals(result.bestLoss, 0.0, 0.002)
+    assertEquals(result.bestLoss, 0.0, 0.003)
     assertEquals(point.get[Double]("x"), 0.0, 0.001)
     assertEquals(point.get[Double]("y"), 0.0, 0.001)
   }
@@ -22,17 +22,17 @@ class AckleyTest {
     val result = AckleyParGridSearch()
     val point = result.bestPoint
 
-    assertEquals(result.bestLoss, 0.0, 0.002)
+    assertEquals(result.bestLoss, 0.0, 0.003)
     assertEquals(point.get[Double]("x"), 0.0, 0.001)
     assertEquals(point.get[Double]("y"), 0.0, 0.001)
   }
 
-  @Ignore
+  @Test
   def testAckleySparkRandomSearch() {
     val result = AckleySparkRandomSearch()
     val point = result.bestPoint
 
-    assertEquals(result.bestLoss, 0.0, 0.002)
+    assertEquals(result.bestLoss, 0.0, 0.003)
     assertEquals(point.get[Double]("x"), 0.0, 0.001)
     assertEquals(point.get[Double]("y"), 0.0, 0.001)
   }
@@ -42,7 +42,7 @@ class AckleyTest {
     val result = AckleySparkGridSearch()
     val point = result.bestPoint
 
-    assertEquals(result.bestLoss, 0.0, 0.002)
+    assertEquals(result.bestLoss, 0.0, 0.003)
     assertEquals(point.get[Double]("x"), 0.0, 0.001)
     assertEquals(point.get[Double]("y"), 0.0, 0.001)
   }
