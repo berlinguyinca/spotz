@@ -1,8 +1,13 @@
 package com.eharmony.spotz.examples.vw
 
 /**
-  * Created by vsuthichai on 8/1/16.
+  * @author vsuthichai
   */
 class VwHoldoutMain {
+  def main(args: Array[String]) {
+    val conf = new VwConfiguration(args)
+    conf.verify()
 
+
+  }
 }

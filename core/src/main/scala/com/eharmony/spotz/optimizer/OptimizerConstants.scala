@@ -1,7 +1,7 @@
 package com.eharmony.spotz.optimizer
 
 /**
-  * Created by vsuthichai on 8/2/16.
+  * @author vsuthichai
   */
 object OptimizerConstants {
   val RANDOM_SEARCH = "random"

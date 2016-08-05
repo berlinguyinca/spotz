@@ -25,7 +25,7 @@ object Preamble {
     }
   }
 
-  class Point(private[this] val hyperParamMap: Map[String, _]) extends Serializable {
+  class Point(val hyperParamMap: Map[String, _]) extends Serializable {
     def get[T](label: String): T = hyperParamMap(label).asInstanceOf[T]
     def getHyperParameterLabels: Set[String] = hyperParamMap.keySet
 
@@ -34,6 +34,13 @@ object Preamble {
         case (sb, (label, value)) => sb ++= s"$label -> $value, "
       }
       s"Point($paramStrings)"
+    }
+
+    override def equals(that: Any): Boolean = {
+      that match {
+        case that: Point => hyperParamMap.equals(that.hyperParamMap)
+        case _ => false
+      }
     }
   }
 

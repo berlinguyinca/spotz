@@ -12,7 +12,7 @@ import org.joda.time.Duration
 /**
   * @author vsuthichai
   */
-trait ExampleRunner {
+object ExampleRunner {
   def stopStrategy(conf: Configuration): StopStrategy = {
     if (conf.trials.isDefined && !conf.duration.isDefined)
       StopStrategy.stopAfterMaxTrials(conf.trials())

@@ -10,9 +10,8 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
   * @author vsuthichai
   */
-/*
 object SparkVwHoldout {
-
+/*
   def randomSearch(args: Array[String]) = {
     val trials = args(1).toInt
     val vwTrainPath = args(2)
@@ -72,5 +71,5 @@ object SparkVwHoldout {
     }
     println(result)
   }
+  */
 }
-*/
