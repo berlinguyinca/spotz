@@ -25,7 +25,7 @@ abstract class RandomSearch[P, L]
   override def optimize(objective: Objective[P, L],
                         reducer: Reducer[(P, L)])
                        (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
-    val space = new RandomSpace[P](paramSpace)
+    val space = new RandomSpace[P](paramSpace, seed)
     val startTime = DateTime.now()
     val firstPoint = space.sample
     val firstLoss = objective(firstPoint)

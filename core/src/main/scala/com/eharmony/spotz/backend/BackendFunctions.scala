@@ -23,3 +23,7 @@ trait BackendFunctions {
                                        reducer: ((P, L), (P, L)) => (P, L))
                                       (implicit c: ClassTag[P], p: ClassTag[L]): (P, L)
 }
+
+trait BackendType
+case object SPARK_BACKEND extends BackendType
+case object PAR_BACKEND extends BackendType

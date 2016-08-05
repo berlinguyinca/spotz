@@ -1,4 +1,4 @@
-package com.eharmony.spotz.examples.branin
+package com.eharmony.spotz.examples
 
 import org.junit.Assert._
 import org.junit.Test
