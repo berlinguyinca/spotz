@@ -2,8 +2,6 @@ package com.eharmony.spotz.examples
 
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.optimizer.grid.GridSearchResult
-import com.eharmony.spotz.optimizer.random.RandomSearchResult
 import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy, UniformDouble}
 import org.joda.time.Duration
 
@@ -35,22 +33,18 @@ trait AckleyExample {
   }
 }
 
-trait AckleyRandomSearch extends AckleyExample with ExampleRunner {
+trait AckleyRandomSearch extends AckleyExample with RandomSearchRunner {
   val hyperParameters = Map(
     ("x", UniformDouble(-5, 5)),
     ("y", UniformDouble(-5, 5))
   )
-
-  def apply(): RandomSearchResult[Point, Double] = randomSearch(objective, hyperParameters, stop, numBatchTrials)
 }
 
-trait AckleyGridSearch extends AckleyExample with ExampleRunner {
+trait AckleyGridSearch extends AckleyExample with GridSearchRunner {
   val hyperParameters = Map(
     ("x", Range.Double(-5, 5, 0.01)),
     ("y", Range.Double(-5, 5, 0.01))
   )
-
-  def apply(): GridSearchResult[Point, Double] = gridSearch(objective, hyperParameters, numBatchTrials)
 }
 
 object AckleyParGridSearch extends AckleyGridSearch with ParExampleRunner

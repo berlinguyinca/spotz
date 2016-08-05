@@ -2,8 +2,6 @@ package com.eharmony.spotz.examples
 
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.optimizer.grid.GridSearchResult
-import com.eharmony.spotz.optimizer.random.RandomSearchResult
 import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy, UniformDouble}
 import org.joda.time.Duration
 
@@ -11,7 +9,13 @@ import scala.math._
 
 
 /**
-  * @author vsuthichai
+  * Input Domain:
+  * This function is usually evaluated on the square x1 ∈ [-5, 10], x2 ∈ [0, 15].
+  *
+  * f(x) = a(x2 - b(x1)^2 + cx1 - r)^2 + s(1 - t)cos(x1) + s
+  *
+  * Global Minimum:
+  * f(x*) = 0.397887 at x* = (-Pi, 12.275), (Pi, 2.275), (9.42478, 2.475)*
   */
 class BraninObjective extends Objective[Point, Double] {
   val a = 1
@@ -21,16 +25,7 @@ class BraninObjective extends Objective[Point, Double] {
   val s = 10
   val t = 1 / (8 * Pi)
 
-  /**
-    *  Input Domain:
-    *  This function is usually evaluated on the square x1 ∈ [-5, 10], x2 ∈ [0, 15].
-    *
-    *  Global Minimum:
-    *  f(x*) = 0.397887 at x* = (-Pi, 12.275), (Pi, 2.275), (9.42478, 2.475)
-    *
-    * @param point
-    * @return a Double which is the result of evaluating the Branin function
-    */
+
   override def apply(point: Point): Double = {
     val x1 = point.get[Double]("x1")
     val x2 = point.get[Double]("x2")
@@ -52,20 +47,18 @@ trait BraninExample {
   }
 }
 
-trait BraninRandomSearch extends BraninExample with ExampleRunner {
+trait BraninRandomSearch extends BraninExample with RandomSearchRunner with ExampleRunner {
   val hyperParameters = Map(
     ("x1", UniformDouble(-5, 10)),
     ("x2", UniformDouble(0, 15))
   )
-  def apply(): RandomSearchResult[Point, Double] = randomSearch(objective, hyperParameters, stop, numBatchTrials)
 }
 
-trait BraninGridSearch extends BraninExample with ExampleRunner {
+trait BraninGridSearch extends BraninExample with GridSearchRunner with ExampleRunner {
   val hyperParameters = Map(
     ("x1", Range.Double(-5, 10, 0.01)),
     ("x2", Range.Double(0, 15, 0.01))
   )
-  def apply(): GridSearchResult[Point, Double] = gridSearch(objective, hyperParameters, numBatchTrials)
 }
 
 object BraninParGridSearch extends BraninGridSearch with ParExampleRunner

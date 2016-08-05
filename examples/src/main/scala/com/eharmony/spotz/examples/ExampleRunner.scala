@@ -44,3 +44,20 @@ trait SparkExampleRunner extends ExampleRunner {
     result
   }
 }
+
+trait GridSearchRunner extends ExampleRunner {
+  val hyperParameters: Map[String, Iterable[AnyVal]]
+  val objective: Objective[Point, Double]
+  val numBatchTrials: Int
+
+  def apply(): GridSearchResult[Point, Double] = gridSearch(objective, hyperParameters, numBatchTrials)
+}
+
+trait RandomSearchRunner extends ExampleRunner {
+  val hyperParameters: Map[String, RandomSampler[_]]
+  val objective: Objective[Point, Double]
+  val stop: StopStrategy
+  val numBatchTrials: Int
+
+  def apply(): RandomSearchResult[Point, Double] = randomSearch(objective, hyperParameters, stop, numBatchTrials)
+}
