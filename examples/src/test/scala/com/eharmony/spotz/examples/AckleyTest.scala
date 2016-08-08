@@ -1,7 +1,8 @@
 package com.eharmony.spotz.examples
 
+import com.eharmony.spotz.Preamble.Point
 import org.junit.Assert._
-import org.junit.{Ignore, Test}
+import org.junit.Test
 
 /**
   * @author vsuthichai
@@ -10,41 +11,31 @@ class AckleyTest {
   @Test
   def testAckleyParRandomSearch() {
     val result = AckleyParRandomSearch()
-    val point = result.bestPoint
-
-    assertEquals(result.bestLoss, 0.0, 0.003)
-    assertEquals(point.get[Double]("x"), 0.0, 0.001)
-    assertEquals(point.get[Double]("y"), 0.0, 0.001)
+    checkAssertions(result.bestPoint, result.bestLoss)
   }
 
   @Test
   def testAckleyParGridSearch() {
     val result = AckleyParGridSearch()
-    val point = result.bestPoint
-
-    assertEquals(result.bestLoss, 0.0, 0.003)
-    assertEquals(point.get[Double]("x"), 0.0, 0.001)
-    assertEquals(point.get[Double]("y"), 0.0, 0.001)
+    checkAssertions(result.bestPoint, result.bestLoss)
   }
 
   @Test
   def testAckleySparkRandomSearch() {
     val result = AckleySparkRandomSearch()
-    val point = result.bestPoint
-
-    assertEquals(result.bestLoss, 0.0, 0.003)
-    assertEquals(point.get[Double]("x"), 0.0, 0.001)
-    assertEquals(point.get[Double]("y"), 0.0, 0.001)
+    checkAssertions(result.bestPoint, result.bestLoss)
   }
 
   @Test
   def testAckleySparkGridSearch() {
     val result = AckleySparkGridSearch()
-    val point = result.bestPoint
+    checkAssertions(result.bestPoint, result.bestLoss)
+  }
 
-    assertEquals(result.bestLoss, 0.0, 0.003)
-    assertEquals(point.get[Double]("x"), 0.0, 0.001)
-    assertEquals(point.get[Double]("y"), 0.0, 0.001)
+  def checkAssertions(p: Point, l: Double) {
+    assertEquals(l, 0.0, 0.01)
+    assertEquals(0.0, p.get[Double]("x"), 0.01)
+    assertEquals(0.0, p.get[Double]("y"), 0.01)
   }
 }
 

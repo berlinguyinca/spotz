@@ -14,7 +14,7 @@ sealed trait StopStrategy extends Serializable {
   def shouldStop(trialsSoFar: Long, timeSinceFirstTrial: Duration): Boolean
 }
 
-// TODO
+// TODO: Finish this.
 case class StopContext[P, L](foo: Any)
 
 class MaxTrialsStop(maxTrials: Long) extends StopStrategy {
@@ -45,6 +45,7 @@ object OptimizerFinishes extends StopStrategy {
   override def shouldStop(trialsSoFar: Long, durationSinceFirstTrial: Duration): Boolean = false
 }
 
+// TODO: Finish this.
 class StopStrategyPredicate[P, L](f: (StopContext[P, L]) => Boolean) {
   def shouldStop(stopContext: StopContext[P, L]) = f(stopContext)
 }

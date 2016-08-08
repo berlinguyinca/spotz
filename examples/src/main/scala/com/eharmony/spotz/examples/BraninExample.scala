@@ -36,7 +36,7 @@ class BraninObjective extends Objective[Point, Double] {
 
 trait BraninExample {
   val objective = new BraninObjective
-  val stop = StopStrategy.stopAfterMaxDuration(Duration.standardSeconds(5))
+  val stop = StopStrategy.stopAfterMaxTrials(5000000)
   val numBatchTrials = 500000
 
   def apply(): OptimizerResult[Point, Double]

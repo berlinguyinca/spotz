@@ -3,7 +3,7 @@ package com.eharmony.spotz.optimizer.grid
 import com.eharmony.spotz.backend.{BackendFunctions, ParallelFunctions, SparkFunctions}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.AbstractOptimizer
-import com.eharmony.spotz.util.{DurationUtils, Logger}
+import com.eharmony.spotz.util.{DurationUtils, Logging}
 import org.apache.spark.SparkContext
 import org.joda.time.{DateTime, Duration}
 
@@ -18,9 +18,8 @@ abstract class GridSearch[P, L]
     (paramSpace: Map[String, Iterable[_]], trialBatchSize: Int)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
 extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
-    with BackendFunctions {
-
-  val LOG = Logger[this.type]()
+    with BackendFunctions
+    with Logging {
 
   def minimize(objective: Objective[P, L], space: Map[String, Iterable[_]])
               (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
@@ -52,7 +51,7 @@ extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)
 
-    LOG.info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
+    info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
 
     trialsSoFar >= space.length match {
       case true =>

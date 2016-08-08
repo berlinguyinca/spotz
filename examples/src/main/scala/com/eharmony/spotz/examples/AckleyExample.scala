@@ -3,7 +3,6 @@ package com.eharmony.spotz.examples
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy, UniformDouble}
-import org.joda.time.Duration
 
 import scala.math._
 
@@ -22,7 +21,7 @@ class AckleyObjective extends Objective[Point, Double] {
 
 trait AckleyExample {
   val objective = new AckleyObjective
-  val stop = StopStrategy.stopAfterMaxDuration(Duration.standardSeconds(5))
+  val stop = StopStrategy.stopAfterMaxTrials(5000000)
   val numBatchTrials = 500000
 
   def apply(): OptimizerResult[Point, Double]

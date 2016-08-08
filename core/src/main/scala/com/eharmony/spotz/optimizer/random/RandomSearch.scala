@@ -3,7 +3,7 @@ package com.eharmony.spotz.optimizer.random
 import com.eharmony.spotz.backend.{BackendFunctions, ParallelFunctions, SparkFunctions}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer._
-import com.eharmony.spotz.util.{DurationUtils, Logger}
+import com.eharmony.spotz.util.{DurationUtils, Logging}
 import org.apache.spark.SparkContext
 import org.joda.time.{DateTime, Duration}
 
@@ -18,9 +18,8 @@ abstract class RandomSearch[P, L]
     (paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int, seed: Int = 0)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends AbstractOptimizer[P, L,  RandomSearchResult[P, L]]
-    with BackendFunctions {
-
-  val LOG = Logger[this.type]()
+    with BackendFunctions
+    with Logging {
 
   override def optimize(objective: Objective[P, L],
                         reducer: Reducer[(P, L)])
@@ -31,7 +30,8 @@ abstract class RandomSearch[P, L]
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count
-    randomSearch(objective, space, reducer, startTime, firstPoint, firstLoss, 1)
+    randomSearch(objective = objective, space = space, reducer = reducer, startTime = startTime,
+      bestPointSoFar = firstPoint, bestLossSoFar = firstLoss, trialsSoFar = 1)
   }
 
   @tailrec
@@ -46,7 +46,7 @@ abstract class RandomSearch[P, L]
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)
 
-    LOG.info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
+    info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
 
     stopStrategy.shouldStop(trialsSoFar, elapsedTime) match {
       case true  =>
@@ -54,7 +54,10 @@ abstract class RandomSearch[P, L]
         new RandomSearchResult[P, L](bestPointSoFar, bestLossSoFar, startTime, endTime, trialsSoFar, elapsedTime)
 
       case false =>
-        val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize).toInt
+        val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize)
+        // TODO: Adaptive batch sizing
+        //val batchSize = nextBatchSize(None, elapsedTime, currentBatchSize, trialsSoFar, null, stopStrategy.getMaxTrials)
+
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
           bestRandomPoint(trialsSoFar, batchSize, objective, space, reducer))
 
