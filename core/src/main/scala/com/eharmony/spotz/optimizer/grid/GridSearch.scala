@@ -12,6 +12,20 @@ import scala.math.Ordering
 import scala.reflect.ClassTag
 
 /**
+  * Grid search implementation.
+  *
+  * This class accepts a hyper parameter space on which to search using a grid search algorithm.
+  * The parameter space must be specified through a Map where the key is a String that
+  * identifies the hyper parameter label and the value is an Iterable type.  Grid search will iteratively
+  * and exhaustively search over all possible combinations of values specified by the Iterable's in the Map.
+  *
+  * The implementation specifies two type parameters, P, the point representation of hyper parameters
+  * and L, the resulting loss from evaluating the objective function.  The best point is kept track of while
+  * iterating over the grid values.  Once the grid values have been exhausted, the search algorithm ends.
+  *
+  * Internally, points are evaluted in batches to allow intermediate updates from whatever distributed
+  * computation framework is being used.
+  *
   * @author vsuthichai
   */
 abstract class GridSearch[P, L]
@@ -47,7 +61,6 @@ extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
   private def gridSearch(objective: Objective[P, L], space: GridSpace[P], reducer: Reducer[(P, L)],
                          startTime: DateTime, bestPointSoFar: P, bestLossSoFar: L, trialsSoFar: Long)
                         (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
-
     val endTime = DateTime.now()
     val elapsedTime = new Duration(startTime, endTime)
 
@@ -64,10 +77,15 @@ extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
   }
 }
 
-class ParGridSearch[P, L](paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 1000000)
-                         (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
+class ParGridSearch[P, L](
+    paramSpace: Map[String, Iterable[_]],
+    trialBatchSize: Int = 1000000)
+    (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with ParallelFunctions
 
-class SparkGridSearch[P, L](@transient val sc: SparkContext, paramSpace: Map[String, Iterable[_]], trialBatchSize: Int = 1000000)
-                           (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
+class SparkGridSearch[P, L](
+    @transient val sc: SparkContext,
+    paramSpace: Map[String, Iterable[_]],
+    trialBatchSize: Int = 1000000)
+    (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with SparkFunctions

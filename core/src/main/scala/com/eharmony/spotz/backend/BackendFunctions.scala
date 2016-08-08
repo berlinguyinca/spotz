@@ -7,6 +7,10 @@ import com.eharmony.spotz.optimizer.random.RandomSpace
 import scala.reflect.ClassTag
 
 /**
+  * This trait contains the functions that are executed by the distributed computation framework.  Currently
+  * Spark and parallel collections are supported.  All optimizers will delegate to these functions to parallelize
+  * computation.
+  *
   * @author vsuthichai
   */
 trait BackendFunctions {
@@ -23,7 +27,3 @@ trait BackendFunctions {
                                        reducer: ((P, L), (P, L)) => (P, L))
                                       (implicit c: ClassTag[P], p: ClassTag[L]): (P, L)
 }
-
-trait BackendType
-case object SPARK_BACKEND extends BackendType
-case object PAR_BACKEND extends BackendType

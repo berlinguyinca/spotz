@@ -12,14 +12,24 @@ import scala.math.Ordering
 import scala.reflect.ClassTag
 
 /**
+  * Random search implementation.
+  *
+  * This search algorithm samples from a predefined Map of RandomSamplers to materialize hyper parameter
+  * values.  This hyper parameter values are represented through a type parameter P, the point representation.
+  * These points are then evaluated with the supplied objective function.  A StopStrategy object must be
+  * supplied by the caller to specify search algorithm stopping criteria.
+  *
   * @author vsuthichai
   */
-abstract class RandomSearch[P, L]
-    (paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int, seed: Int = 0)
+abstract class RandomSearch[P, L](
+    paramSpace: Map[String, RandomSampler[_]],
+    stopStrategy: StopStrategy,
+    trialBatchSize: Int,
+    seed: Int = 0)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends AbstractOptimizer[P, L,  RandomSearchResult[P, L]]
-    with BackendFunctions
-    with Logging {
+  with BackendFunctions
+  with Logging {
 
   override def optimize(objective: Objective[P, L],
                         reducer: Reducer[(P, L)])
@@ -34,6 +44,23 @@ abstract class RandomSearch[P, L]
       bestPointSoFar = firstPoint, bestLossSoFar = firstLoss, trialsSoFar = 1)
   }
 
+  /**
+    * A tail recursive method that performs the random search.  We keep track of the best point and the best loss
+    * represented by P and L.  This function delegates to the BackendFunctions trait to parallelize the objective
+    * function evaluations.  The method completes after a caller specified number of trials and/or elapsed time
+    * duration.
+    *
+    * @param objective the objective function
+    * @param space representation of hyper parameter space from which to sample hyper parameter points
+    * @param reducer the function used to reduce points
+    * @param startTime the time at which this optimization job started
+    * @param bestPointSoFar the best point discovered so far
+    * @param bestLossSoFar the best loss discovered so far
+    * @param trialsSoFar the number of objective function evaluations performed so far
+    * @param c ClassTag for P
+    * @param p ClassTag for C
+    * @return a <code>RandomSearchResult</code>
+    */
   @tailrec
   private[this] def randomSearch(objective: Objective[P, L],
                                  space: RandomSpace[P],
@@ -67,13 +94,42 @@ abstract class RandomSearch[P, L]
   }
 }
 
-class ParRandomSearch[P, L]
-    (paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int = 1000000)
-    (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory) with ParallelFunctions
-
-class SparkRandomSearch[P, L]
-    (@transient val sc: SparkContext, paramSpace: Map[String, RandomSampler[_]], stopStrategy: StopStrategy, trialBatchSize: Int = 1000000)
+/**
+  * This implementation uses parallel collections to evaluate the objective function.  Internally,
+  * threads are used.
+  *
+  * @param paramSpace the parameter space on which to search
+  * @param stopStrategy the stop strategy criteria specifying when the search should end
+  * @param trialBatchSize batch size specifying the number of points to process per epoch
+  * @param ord an implicit Ordering for the point representation type parameter P
+  * @param factory an implicit function specifying how to instantiate P given a Map of sampled hyper parameter values
+  * @tparam P point type representation
+  * @tparam L loss type representation
+  */
+class ParRandomSearch[P, L](
+    paramSpace: Map[String, RandomSampler[_]],
+    stopStrategy: StopStrategy,
+    trialBatchSize: Int = 1000000)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory)
-    with SparkFunctions
+  with ParallelFunctions
+
+/**
+  * Random search on top of Spark.
+  *
+  * @param paramSpace the parameter space on which to search
+  * @param stopStrategy the stop strategy criteria specifying when the search should end
+  * @param trialBatchSize batch size specifying the number of points to process per epoch
+  * @param ord an implicit Ordering for the point representation type parameter P
+  * @param factory an implicit function specifying how to instantiate P given a Map of sampled hyper parameter values
+  * @tparam P point type representation
+  * @tparam L loss type representation
+  */
+class SparkRandomSearch[P, L](
+    @transient val sc: SparkContext,
+    paramSpace: Map[String, RandomSampler[_]],
+    stopStrategy: StopStrategy,
+    trialBatchSize: Int = 1000000)
+    (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
+  extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory)
+  with SparkFunctions
