@@ -22,16 +22,16 @@ import scala.reflect.ClassTag
   * @author vsuthichai
   */
 abstract class RandomSearch[P, L](
-    paramSpace: Map[String, RandomSampler[_]],
     stopStrategy: StopStrategy,
     trialBatchSize: Int,
     seed: Int = 0)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends AbstractOptimizer[P, L,  RandomSearchResult[P, L]]
+  extends AbstractOptimizer[P, L, Map[String, RandomSampler[_]], RandomSearchResult[P, L]]
   with BackendFunctions
   with Logging {
 
   override def optimize(objective: Objective[P, L],
+                        paramSpace: Map[String, RandomSampler[_]],
                         reducer: Reducer[(P, L)])
                        (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
     val space = new RandomSpace[P](paramSpace, seed)
@@ -98,7 +98,6 @@ abstract class RandomSearch[P, L](
   * This implementation uses parallel collections to evaluate the objective function.  Internally,
   * threads are used.
   *
-  * @param paramSpace the parameter space on which to search
   * @param stopStrategy the stop strategy criteria specifying when the search should end
   * @param trialBatchSize batch size specifying the number of points to process per epoch
   * @param ord an implicit Ordering for the point representation type parameter P
@@ -107,17 +106,15 @@ abstract class RandomSearch[P, L](
   * @tparam L loss type representation
   */
 class ParRandomSearch[P, L](
-    paramSpace: Map[String, RandomSampler[_]],
     stopStrategy: StopStrategy,
     trialBatchSize: Int = 1000000)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory)
+  extends RandomSearch[P, L](stopStrategy, trialBatchSize)(ord, factory)
   with ParallelFunctions
 
 /**
   * Random search on top of Spark.
   *
-  * @param paramSpace the parameter space on which to search
   * @param stopStrategy the stop strategy criteria specifying when the search should end
   * @param trialBatchSize batch size specifying the number of points to process per epoch
   * @param ord an implicit Ordering for the point representation type parameter P
@@ -127,9 +124,8 @@ class ParRandomSearch[P, L](
   */
 class SparkRandomSearch[P, L](
     @transient val sc: SparkContext,
-    paramSpace: Map[String, RandomSampler[_]],
     stopStrategy: StopStrategy,
     trialBatchSize: Int = 1000000)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends RandomSearch[P, L](paramSpace, stopStrategy, trialBatchSize)(ord, factory)
+  extends RandomSearch[P, L](stopStrategy, trialBatchSize)(ord, factory)
   with SparkFunctions

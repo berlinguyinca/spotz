@@ -29,23 +29,14 @@ import scala.reflect.ClassTag
   * @author vsuthichai
   */
 abstract class GridSearch[P, L]
-    (paramSpace: Map[String, Iterable[_]], trialBatchSize: Int)
+    (trialBatchSize: Int)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
-extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
-    with BackendFunctions
-    with Logging {
-
-  def minimize(objective: Objective[P, L], space: Map[String, Iterable[_]])
-              (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
-    optimize(objective, min)
-  }
-
-  def maximize(objective: Objective[P, L], space: Map[String, Iterable[_]])
-              (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
-    optimize(objective, max)
-  }
+  extends AbstractOptimizer[P, L, Map[String, Iterable[Any]], GridSearchResult[P, L]]
+  with BackendFunctions
+  with Logging {
 
   override protected def optimize(objective: Objective[P, L],
+                                  paramSpace: Map[String, Iterable[Any]],
                                   reducer: Reducer[(P, L)])
                                  (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
     val space = new GridSpace[P](paramSpace)
@@ -77,15 +68,34 @@ extends AbstractOptimizer[P, L, GridSearchResult[P, L]]
   }
 }
 
+/**
+  * Grid search backed by parallel collections.
+  *
+  * @param trialBatchSize default batch size specifying number of points to batch process
+  * @param ord Ordering for point type P
+  * @param factory a function that takes a Map of sampled hyper parameter values and instanties the point P
+  * @tparam P point type representation
+  * @tparam L loss type representation
+  */
 class ParGridSearch[P, L](
-    paramSpace: Map[String, Iterable[_]],
     trialBatchSize: Int = 1000000)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with ParallelFunctions
+  extends GridSearch[P, L](trialBatchSize)(ord, factory)
+  with ParallelFunctions
 
+/**
+  * Grid search backed by Spark.
+  *
+  * @param sc SparkContext
+  * @param trialBatchSize default batch size specifying number of points to batch process
+  * @param ord Ordering for point type P
+  * @param factory a function that takes a Map of sampled hyper parameter values and instanties the point P
+  * @tparam P point type representation
+  * @tparam L loss type representation
+  */
 class SparkGridSearch[P, L](
     @transient val sc: SparkContext,
-    paramSpace: Map[String, Iterable[_]],
     trialBatchSize: Int = 1000000)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends GridSearch[P, L](paramSpace, trialBatchSize)(ord, factory) with SparkFunctions
+  extends GridSearch[P, L](trialBatchSize)(ord, factory)
+  with SparkFunctions

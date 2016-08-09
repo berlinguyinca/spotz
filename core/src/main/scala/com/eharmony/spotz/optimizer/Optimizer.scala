@@ -12,27 +12,27 @@ import scala.reflect.ClassTag
   * @tparam L loss returned from objective function evaluation
   * @tparam R optimizer result containing the best point and minimized or maximized loss
   */
-trait Optimizer[P, L, +R] extends Serializable {
-  def minimize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R
-  def maximize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R
+trait Optimizer[P, L, S, +R] extends Serializable {
+  def minimize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R
+  def maximize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R
 }
 
 
-trait AbstractOptimizer[P, L, R <: OptimizerResult[P, L]] extends Optimizer[P, L, R] {
+trait AbstractOptimizer[P, L, S, R <: OptimizerResult[P, L]] extends Optimizer[P, L, S, R] {
   type Reducer[T] = (T, T) => T
   implicit val ord: Ordering[(P, L)]
 
   protected def min(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.min(p1, p2)
   protected def max(p1: (P,L), p2: (P,L))(implicit ord: Ordering[(P,L)]): (P,L) = ord.max(p1, p2)
-  protected def optimize(objective: Objective[P, L], reducer: Reducer[(P, L)])
+  protected def optimize(objective: Objective[P, L], space: S, reducer: Reducer[(P, L)])
                         (implicit c: ClassTag[P], p: ClassTag[L]): R
 
-  override def minimize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R = {
-    optimize(objective, min)
+  override def minimize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R = {
+    optimize(objective, space, min)
   }
 
-  override def maximize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R = {
-    optimize(objective, max)
+  override def maximize(objective: Objective[P, L], space: S)(implicit c: ClassTag[P], p: ClassTag[L]): R = {
+    optimize(objective, space, max)
   }
 }
 

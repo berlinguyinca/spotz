@@ -38,11 +38,11 @@ trait SparkFunctions extends BackendFunctions {
     *                generated
     * @return the best point with the best loss
     */
-  protected override def bestRandomPoint[P, L](startIndex: Long,
-                                               batchSize: Long,
-                                               objective: Objective[P, L],
-                                               space: RandomSpace[P],
-                                               reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
+  protected override def bestRandomPointAndLoss[P, L](startIndex: Long,
+                                                      batchSize: Long,
+                                                      objective: Objective[P, L],
+                                                      space: RandomSpace[P],
+                                                      reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
     assert(batchSize > 0, "batchSize must be greater than 0")
 
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
@@ -59,12 +59,12 @@ trait SparkFunctions extends BackendFunctions {
     pointAndLossRDD.reduce(reducer)
   }
 
-  def bestPointAndLoss[P, L](startIndex: Long,
-                             batchSize: Long,
-                             objective: Objective[P, L],
-                             space: GridSpace[P],
-                             reducer: ((P, L), (P, L)) => (P, L))
-                            (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
+  protected override def bestGridPointAndLoss[P, L](startIndex: Long,
+                                                    batchSize: Long,
+                                                    objective: Objective[P, L],
+                                                    space: GridSpace[P],
+                                                    reducer: ((P, L), (P, L)) => (P, L))
+                                                    (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
     val pointAndLossRDD = rdd.map { case idx =>
       val point = space(idx)

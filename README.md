@@ -65,7 +65,7 @@ definitions into the current scope.
 
 ## Imports
 
-Import the default definitions inside the spotz preamble object
+Import the default definitions from the spotz preamble object
 
 ```scala
 import com.eharmony.spotz.Preamble._

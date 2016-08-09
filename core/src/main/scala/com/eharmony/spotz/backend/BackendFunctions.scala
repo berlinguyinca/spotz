@@ -14,16 +14,16 @@ import scala.reflect.ClassTag
   * @author vsuthichai
   */
 trait BackendFunctions {
-  protected def bestRandomPoint[P, L](startIndex: Long,
-                                      batchSize: Long,
-                                      objective: Objective[P, L],
-                                      space: RandomSpace[P],
-                                      reducer: ((P, L), (P, L)) => (P, L)): (P, L)
+  protected def bestRandomPointAndLoss[P, L](startIndex: Long,
+                                             batchSize: Long,
+                                             objective: Objective[P, L],
+                                             space: RandomSpace[P],
+                                             reducer: ((P, L), (P, L)) => (P, L)): (P, L)
 
-  protected def bestPointAndLoss[P, L](startIndex: Long,
-                                       batchSize: Long,
-                                       objective: Objective[P, L],
-                                       space: GridSpace[P],
-                                       reducer: ((P, L), (P, L)) => (P, L))
-                                      (implicit c: ClassTag[P], p: ClassTag[L]): (P, L)
+  protected def bestGridPointAndLoss[P, L](startIndex: Long,
+                                           batchSize: Long,
+                                           objective: Objective[P, L],
+                                           space: GridSpace[P],
+                                           reducer: ((P, L), (P, L)) => (P, L))
+                                           (implicit c: ClassTag[P], p: ClassTag[L]): (P, L)
 }

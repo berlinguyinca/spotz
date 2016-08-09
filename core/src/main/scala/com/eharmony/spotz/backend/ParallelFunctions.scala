@@ -10,26 +10,25 @@ import scala.reflect.ClassTag
   * @author vsuthichai
   */
 trait ParallelFunctions extends BackendFunctions {
-  protected override def bestRandomPoint[P, L](startIndex: Long,
-                                               batchSize: Long,
-                                               objective: Objective[P, L],
-                                               space: RandomSpace[P],
-                                               reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
+  protected override def bestRandomPointAndLoss[P, L](startIndex: Long,
+                                                      batchSize: Long,
+                                                      objective: Objective[P, L],
+                                                      space: RandomSpace[P],
+                                                      reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
     val pointsAndLosses = (startIndex until (startIndex + batchSize)).par.map { trial =>
       val rngModifiedSpace = space.setSeed(space.seed + trial)
       val point = rngModifiedSpace.sample
       (point, objective(point))
     }
-
     pointsAndLosses.reduce(reducer)
   }
 
-  protected override def bestPointAndLoss[P, L](startIndex: Long,
-                                                batchSize: Long,
-                                                objective: Objective[P, L],
-                                                space: GridSpace[P],
-                                                reducer: ((P, L), (P, L)) => (P, L))
-                                                (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
+  protected override def bestGridPointAndLoss[P, L](startIndex: Long,
+                                                    batchSize: Long,
+                                                    objective: Objective[P, L],
+                                                    space: GridSpace[P],
+                                                    reducer: ((P, L), (P, L)) => (P, L))
+                                                    (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
     val pointsAndLosses = (startIndex until (startIndex + batchSize)).par.map { trial =>
       val point = space(trial)
       (point, objective(point))
