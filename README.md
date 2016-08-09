@@ -6,15 +6,16 @@ Spotz is a
 framework written in [Scala](http://www.scala-lang.org) designed to exploit
 [Apache Spark](http://spark.apache.org) perform its distributed computation.
 A broad set of optimization algorithms have been implemented to solve for the
-hyperparameter values of an objective function that you specify.
+hyperparameter values of an [objective function](https://en.wikipedia.org/wiki/Loss_function)
+that you specify.
 
 ## Motivation
 The [eHarmony](http://www.eharmony.com) modeling team primarily uses Spark
 and Scala as the base of its machine learning pipeline.  Given that Spark
 is our distributed compute engine of choice, we have need for a robust
 hyperparameter optimization framework that integrates well with Spark.  There
-are already excellent frameworks out there like 
-[Hyperopt](http://hyperopt.github.io/hyperopt) and 
+are already excellent frameworks out there like
+[Hyperopt](http://hyperopt.github.io/hyperopt) and
 [Optunity](http://optunity.readthedocs.io/en/latest),
 written in Python, but the ideal framework that runs in Scala on top of Spark
 does not exist.  [MLlib](http://spark.apache.org/mllib), though providing
@@ -37,13 +38,13 @@ Currently the following solvers have been implemented:
 
 * [Random Search](https://en.wikipedia.org/wiki/Random_search)
 * [Grid Search](https://en.wikipedia.org/wiki/Grid_search_method)
-* We are currently 
+* We are currently exploring other search algorithms to add
 
 ## Usage
 
 Using this framework consists of writing the following boilerplate code:
 
-0. Import the default Point implementation
+0. Import the default package classes
 1. Define the objective function
 2. Define the space of hyperparameter values that you wish to search.
 3. Select the solver.
@@ -137,36 +138,13 @@ StopStrategy.stopAfterMaxTrialsOrMaxDuration(maxTrials, maxDuration)
 
 ## Full Example
 
-Wiring it all together, here is all the necessary boilerplate to make your
-example work.
-
-```scala
-import com.eharmony.spotz.Preamble.Point
-import com.eharmony.spotz.objective.Objective
-
-import scala.math._
-
-class BraninObjective extends Objective[Point, Double] {
-  val a = 1
-  val b = 5.1 / (4 * pow(Pi, 2))
-  val c = 5 / Pi
-  val r = 6
-  val s = 10
-  val t = 1 / (8 * Pi)
-
-  override def apply(point: Point): Double = {
-    val x1 = point.get[Double]("x1")
-    val x2 = point.get[Double]("x2")
-
-    a * pow(x2 - b*pow(x1, 2) + c*x1 - r, 2) + s*(1-t)*cos(x1) + s
-  }
-}
-```
+Wiring it all together and using the Branin objective function defined
+above, here is all the necessary boilerplate to make your example work.
 
 ```scala
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.optimizer.StopStrategy
-import com.eharmony.spotz.optimizer.random.{RandomSearch, Uniform}
+import com.eharmony.spotz.optimizer.random.{SparkRandomSearch, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
 val sc = new SparkContext(new SparkConf().setAppName("Branin Function Trials"))
@@ -179,3 +157,4 @@ val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 sc.stop()
 ```
+
