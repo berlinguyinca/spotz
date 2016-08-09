@@ -40,13 +40,25 @@ Currently the following solvers have been implemented:
 * [Grid Search](https://en.wikipedia.org/wiki/Grid_search_method)
 * We are currently exploring other search algorithms to add
 
+## Maven dependency
+
+To use this as part of a maven build
+
+```xml
+<dependency>
+    <groupId>com.eharmony</groupId>
+    <artifactId>spotz-core</artifactId>
+    <version>1.0.0</version>
+<dependency>
+```
+
 ## Usage
 
 Using this framework consists of writing the following boilerplate code:
 
-1. Import the default definitions inside the spotz preamble.  Importing from
-a library Preamble is a Scala convention to bring in default definitions
-into the current scope.
+1. Import the default definitions from the spotz ```Preamble``` object.
+Importing from a library Preamble is a Scala convention to bring in default
+definitions into the current scope.
 2. Define the objective function.
 3. Define the space of hyperparameter values that you wish to search.
 4. Select the solver.

@@ -3,7 +3,6 @@ package com.eharmony.spotz.examples
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy, UniformDouble}
-import org.joda.time.Duration
 
 import scala.math._
 
