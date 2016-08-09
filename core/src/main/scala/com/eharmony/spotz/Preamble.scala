@@ -6,6 +6,8 @@ package com.eharmony.spotz
   * @author vsuthichai
   */
 object Preamble {
+  import scala.language.implicitConversions
+  
   implicit object PointLossOrdering extends Ordering[(Point, Double)] {
     override def compare(x: (Point, Double), y: (Point, Double)): Int = {
       if (x._2 > y._2) 1

@@ -6,12 +6,17 @@ import scala.math.Ordering
 import scala.reflect.ClassTag
 
 /**
-  * @author vsuthichai
+  * Optimizer trait.
+  *
+  * @tparam P point type passed to objective function
+  * @tparam L loss returned from objective function evaluation
+  * @tparam R optimizer result containing the best point and minimized or maximized loss
   */
 trait Optimizer[P, L, +R] extends Serializable {
   def minimize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R
   def maximize(objective: Objective[P, L])(implicit c: ClassTag[P], p: ClassTag[L]): R
 }
+
 
 trait AbstractOptimizer[P, L, R <: OptimizerResult[P, L]] extends Optimizer[P, L, R] {
   type Reducer[T] = (T, T) => T
