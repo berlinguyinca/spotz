@@ -1,11 +1,12 @@
 # spotz [![Build Status](https://travis-ci.org/eHarmony/spotz.svg?branch=master)](https://travis-ci.org/eHarmony/spotz) [![Stories in Ready](https://badge.waffle.io/eHarmony/spotz.png?label=ready&title=Ready)](https://waffle.io/eHarmony/spotz) #
 # Spark Parameter Optimization
 
-Spotz is a [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization)
-framework written in (link)Scala designed to exploit (link)Apache Spark to 
-perform its distributed computation.  A broad set of optimization algorithms
-have been implemented to solve for the hyperparameter values of an objective
-function that you specify.
+Spotz is a 
+[hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization)
+framework written in [Scala](http://www.scala-lang.org) designed to exploit
+[Apache Spark](http://spark.apache.org) perform its distributed computation.
+A broad set of optimization algorithms have been implemented to solve for the
+hyperparameter values of an objective function that you specify.
 
 ## Motivation
 The eHarmony modeling team primarily uses Spark and Scala as the base of
