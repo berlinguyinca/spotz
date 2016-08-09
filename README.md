@@ -78,10 +78,9 @@ the point and the loss.  This function must simply implement the
 abstract representation of the current hyperparameter values and is passed
 into the trait through the apply method.  The loss is the value returned from
 evaluating the objective function on that point.  The framework default
-implementation provides a ```Point``` class for the ```P``` type parameter and 
-uses ```Double``` as the loss value.  The Spotz framework defines the default
-type for ```P``` to be ```com.eharmony.spotz.Preamble.Point```, inside the
-package class.  Importing the default definitions within the Preamble object
+implementation provides a ```Point``` class for the ```P``` type parameter 
+within the ```Preamble``` object and uses ```Double``` as the loss value.
+Again, importing the default definitions within the Preamble object
 is important for this to work.
 
 The Branin-Hoo function is shown here as a simple example.
