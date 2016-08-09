@@ -44,10 +44,12 @@ Currently the following solvers have been implemented:
 
 Using this framework consists of writing the following boilerplate code:
 
-0. Import the default definitions inside spotz preamble.
-1. Define the objective function.
-2. Define the space of hyperparameter values that you wish to search.
-3. Select the solver.
+1. Import the default definitions inside the spotz preamble.  Importing from
+the library Preamble is a Scala convention to bring in default definitions
+into the current scope.
+2. Define the objective function.
+3. Define the space of hyperparameter values that you wish to search.
+4. Select the solver.
 
 ## Imports
 
