@@ -62,7 +62,7 @@ abstract class GridSearch[P, L]
         GridSearchResult(bestPointSoFar, bestLossSoFar, startTime, endTime, trialsSoFar, elapsedTime)
       case false =>
         val batchSize = scala.math.min(space.length - trialsSoFar, trialBatchSize)
-        val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar), bestPointAndLoss(trialsSoFar, batchSize, objective, space, reducer))
+        val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar), bestGridPointAndLoss(trialsSoFar, batchSize, objective, space, reducer))
         gridSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
     }
   }

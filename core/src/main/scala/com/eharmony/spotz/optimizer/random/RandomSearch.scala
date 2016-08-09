@@ -86,7 +86,7 @@ abstract class RandomSearch[P, L](
         //val batchSize = nextBatchSize(None, elapsedTime, currentBatchSize, trialsSoFar, null, stopStrategy.getMaxTrials)
 
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
-          bestRandomPoint(trialsSoFar, batchSize, objective, space, reducer))
+          bestRandomPointAndLoss(trialsSoFar, batchSize, objective, space, reducer))
 
         // Last 3 args maintain the state
         randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
