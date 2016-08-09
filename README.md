@@ -1,25 +1,31 @@
 # spotz [![Build Status](https://travis-ci.org/eHarmony/spotz.svg?branch=master)](https://travis-ci.org/eHarmony/spotz) [![Stories in Ready](https://badge.waffle.io/eHarmony/spotz.png?label=ready&title=Ready)](https://waffle.io/eHarmony/spotz) #
 # Spark Parameter Optimization
 
-Spotz is a (link)hyperparameter optimization framework written in (link)Scala designed
-to exploit (link)Apache Spark to perform its distributed computation.  A broad
-set of optimization algorithms have been implemented to solve for the
-hyperparameter values of an objective function that you specify.
+Spotz is a [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization)
+framework written in (link)Scala designed to exploit (link)Apache Spark to 
+perform its distributed computation.  A broad set of optimization algorithms
+have been implemented to solve for the hyperparameter values of an objective
+function that you specify.
 
 ## Motivation
-The eHarmony modeling team primarily uses Spark and Scala as the base of its machine
-learning pipeline.  For learners, we use primarily Vowpal Wabbit.  Given that Spark
-is our distributed computation engine of choice, we have need for a robust
-hyperparameter optimization framework that integrates well with Spark.  There are
-excellent frameworks out there like Hyperopt and Optunity, written in Python, but
-the ideal framework that runs on top of Spark does not exist.  This project's purpose
-is to build a simple framework that developers can use for their own hyperparameter
-optimization needs.
+The eHarmony modeling team primarily uses Spark and Scala as the base of
+its machine learning pipeline.  For learners, we use primarily 
+[VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
+Given that Spark is our distributed compute engine of choice, we have need
+for a robust hyperparameter optimization framework that integrates well with
+Spark.  There are already excellent frameworks out there like Hyperopt and
+Optunity, written in Python, but the ideal framework that runs in Scala on
+top of Spark does not exist.  This project's purpose is to build a simple
+framework that developers can integrate with Spark to fulfill their 
+hyperparameter optimization needs.
 
-## VW
-At [eHarmony](http://www.eharmony.com), we make use of [VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
-We feel that integrating VW is important. We've taken steps ABC to make hypopt in VW more specialized
-while not losing generality
+## VowpalWabbit
+At [eHarmony](http://www.eharmony.com), we make heavy use of 
+[VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
+We make use of this learner so much that we feel strong integration with
+VW is very important.  Considering that VowpalWabbit does not support
+hyperparameter optimization out of the box, we've taken steps to support
+it without losing generality. 
 
 ## Optimization Algorithms
 
@@ -33,6 +39,7 @@ Currently the following solvers have been implemented:
 
 Using this framework consists of writing the following boilerplate code:
 
+0. Import the default Point implementation
 1. Define the objective function
 2. Define the space of hyperparameter values that you wish to search.
 3. Select the solver.
@@ -53,12 +60,12 @@ the point and the loss.  This function must simply implement the
 ```apply(point: P): L``` method of that trait.  The point type parameter is an
 abstract representation of the current hyperparameter values and is passed
 into the trait through the apply method.  The loss is the value returned from
-executing the objective function.  The framework default implementation
-provides a ```Point``` class for the ```P``` type parameter and uses
+evaluating the objective function on that point.  The framework default
+implementation provides a ```Point``` class for the ```P``` type parameter and uses
 ```Double``` as the loss value.
 
-The Branin-Hoo function is shown here as a test object function
-example.  Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
+The Branin-Hoo function is shown here as a simple example.  
+Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
 
 ```scala
 class BraninObjective extends Objective[Point, Double] {
@@ -102,7 +109,7 @@ best hyperparameter values.
 
 ```scala
 val stopStrategy = StopStrategy.stopAfterMaxTrials(maxTrials)
-val optimizer = new RandomSearch[Point, Double](sparkContext, stopStrategy)
+val optimizer = new SparkRandomSearch[Point, Double](sparkContext, stopStrategy)
 ```
 
 ### Stop Strategies
@@ -155,16 +162,17 @@ class BraninObjective extends Objective[Point, Double] {
 ```scala
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.optimizer.StopStrategy
-import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, Uniform}
+import com.eharmony.spotz.optimizer.random.{RandomSearch, Uniform}
 import org.apache.spark.{SparkConf, SparkContext}
 
 val sc = new SparkContext(new SparkConf().setAppName("Branin Function Trials"))
-val space = new RandomSpace[Point](Map(
+val space = Map(
   ("x1", new Uniform(-5, 10),
   ("x2", new Uniform(0, 15)
 )
 val stopStrategy = StopStrategy.stopAfterMaxTrials(maxTrials)
-val optimizer = new RandomSearch[Point, Double](sc, stopStrategy)
+val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 sc.stop()
 ```
+
