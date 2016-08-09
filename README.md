@@ -27,10 +27,10 @@ their hyperparameter optimization needs.
 ## VowpalWabbit
 At [eHarmony](http://www.eharmony.com), we make heavy use of
 [VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
-We make use of this learner so much that we feel strong integration with
-VW is very important.  Considering that VowpalWabbit does not support
-hyperparameter optimization out of the box, we've taken steps to support
-it without losing generality.
+We use this learner so much that we feel strong integration with VW is very
+important.  Considering that VowpalWabbit does not support hyperparameter
+optimization out of the box, we've taken steps to support it without losing
+generality.
 
 ## Optimization Algorithms
 
@@ -45,7 +45,7 @@ Currently the following solvers have been implemented:
 Using this framework consists of writing the following boilerplate code:
 
 1. Import the default definitions inside the spotz preamble.  Importing from
-the library Preamble is a Scala convention to bring in default definitions
+a library Preamble is a Scala convention to bring in default definitions
 into the current scope.
 2. Define the objective function.
 3. Define the space of hyperparameter values that you wish to search.
@@ -65,6 +65,8 @@ Define your objective function by implementing the ```Objective[P, L]```
 trait.
 
 ```scala
+import com.eharmony.spotz.objective.Objective
+
 trait Objective[P, L]  {
   def apply(point: P): L
 }
@@ -86,6 +88,9 @@ The Branin-Hoo function is shown here as a simple example.
 Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
 
 ```scala
+import com.eharmony.spotz.Preamble._
+import com.eharmony.spotz.objective.Objective
+
 class BraninObjective extends Objective[Point, Double] {
   val a = 1
   val b = 5.1 / (4 * pow(Pi, 2))
