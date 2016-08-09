@@ -1,10 +1,25 @@
 # spotz [![Build Status](https://travis-ci.org/eHarmony/spotz.svg?branch=master)](https://travis-ci.org/eHarmony/spotz) [![Stories in Ready](https://badge.waffle.io/eHarmony/spotz.png?label=ready&title=Ready)](https://waffle.io/eHarmony/spotz) #
 # Spark Parameter Optimization
 
-Spotz is a hyperparameter optimization framework written in Scala designed
-to exploit Apache Spark to perform its distributed computation.  A broad
+Spotz is a (link)hyperparameter optimization framework written in (link)Scala designed
+to exploit (link)Apache Spark to perform its distributed computation.  A broad
 set of optimization algorithms have been implemented to solve for the
 hyperparameter values of an objective function that you specify.
+
+## Motivation
+The eHarmony modeling team primarily uses Spark and Scala as the base of its machine
+learning pipeline.  For learners, we use primarily Vowpal Wabbit.  Given that Spark
+is our distributed computation engine of choice, we have need for a robust
+hyperparameter optimization framework that integrates well with Spark.  There are
+excellent frameworks out there like Hyperopt and Optunity, written in Python, but
+the ideal framework that runs on top of Spark does not exist.  This project's purpose
+is to build a simple framework that developers can use for their own hyperparameter
+optimization needs.
+
+## VW
+At [eHarmony](http://www.eharmony.com), we make use of [VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
+We feel that integrating VW is important. We've taken steps ABC to make hypopt in VW more specialized
+while not losing generality
 
 ## Optimization Algorithms
 
@@ -20,7 +35,7 @@ Using this framework consists of writing the following boilerplate code:
 
 1. Define the objective function
 2. Define the space of hyperparameter values that you wish to search.
-3. Selecting the solver.
+3. Select the solver.
 
 ## Objective Function Trait
 
