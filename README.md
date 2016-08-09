@@ -1,7 +1,7 @@
 # spotz [![Build Status](https://travis-ci.org/eHarmony/spotz.svg?branch=master)](https://travis-ci.org/eHarmony/spotz) [![Stories in Ready](https://badge.waffle.io/eHarmony/spotz.png?label=ready&title=Ready)](https://waffle.io/eHarmony/spotz) #
 # Spark Parameter Optimization
 
-Spotz is a 
+Spotz is a
 [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization)
 framework written in [Scala](http://www.scala-lang.org) designed to exploit
 [Apache Spark](http://spark.apache.org) perform its distributed computation.
@@ -9,24 +9,27 @@ A broad set of optimization algorithms have been implemented to solve for the
 hyperparameter values of an objective function that you specify.
 
 ## Motivation
-The eHarmony modeling team primarily uses Spark and Scala as the base of
-its machine learning pipeline.  For learners, we use primarily 
-[VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
-Given that Spark is our distributed compute engine of choice, we have need
-for a robust hyperparameter optimization framework that integrates well with
-Spark.  There are already excellent frameworks out there like Hyperopt and
-Optunity, written in Python, but the ideal framework that runs in Scala on
-top of Spark does not exist.  This project's purpose is to build a simple
-framework that developers can integrate with Spark to fulfill their 
-hyperparameter optimization needs.
+The [eHarmony](http://www.eharmony.com) modeling team primarily uses Spark
+and Scala as the base of its machine learning pipeline.  Given that Spark
+is our distributed compute engine of choice, we have need for a robust
+hyperparameter optimization framework that integrates well with Spark.  
+There are already excellent frameworks out there like 
+[Hyperopt](http://hyperopt.github.io/hyperopt) and 
+[Optunity](http://optunity.readthedocs.io/en/latest),
+written in Python, but the ideal framework that runs in Scala on top of Spark
+does not exist.  [MLlib](http://spark.apache.org/mllib), though providing
+some support for Grid Search, is not a general framework for hyperparameter
+tuning and does not integrate with other learners.  This project's purpose is
+to build a simple framework that developers can integrate with Spark to fulfill
+their hyperparameter optimization needs.
 
 ## VowpalWabbit
-At [eHarmony](http://www.eharmony.com), we make heavy use of 
+At [eHarmony](http://www.eharmony.com), we make heavy use of
 [VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
 We make use of this learner so much that we feel strong integration with
 VW is very important.  Considering that VowpalWabbit does not support
 hyperparameter optimization out of the box, we've taken steps to support
-it without losing generality. 
+it without losing generality.
 
 ## Optimization Algorithms
 
@@ -34,7 +37,7 @@ Currently the following solvers have been implemented:
 
 * [Random Search](https://en.wikipedia.org/wiki/Random_search)
 * [Grid Search](https://en.wikipedia.org/wiki/Grid_search_method)
-* More?
+* We are currently 
 
 ## Usage
 
@@ -65,7 +68,7 @@ evaluating the objective function on that point.  The framework default
 implementation provides a ```Point``` class for the ```P``` type parameter and uses
 ```Double``` as the loss value.
 
-The Branin-Hoo function is shown here as a simple example.  
+The Branin-Hoo function is shown here as a simple example.
 Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
 
 ```scala
@@ -105,7 +108,7 @@ Define the space of hyperparameter values that you desire to search.  TODO
 
 Select the algorithm of your choice to perform the optimization.  Some
 algorithms may require defining a stopping strategy.  This states when you'd
-like the solver to stop searching the defined hyperparameter space for the 
+like the solver to stop searching the defined hyperparameter space for the
 best hyperparameter values.
 
 ```scala
@@ -176,4 +179,3 @@ val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 sc.stop()
 ```
-
