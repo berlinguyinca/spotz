@@ -12,8 +12,8 @@ hyperparameter values of an objective function that you specify.
 The [eHarmony](http://www.eharmony.com) modeling team primarily uses Spark
 and Scala as the base of its machine learning pipeline.  Given that Spark
 is our distributed compute engine of choice, we have need for a robust
-hyperparameter optimization framework that integrates well with Spark.  
-There are already excellent frameworks out there like 
+hyperparameter optimization framework that integrates well with Spark.  There
+are already excellent frameworks out there like 
 [Hyperopt](http://hyperopt.github.io/hyperopt) and 
 [Optunity](http://optunity.readthedocs.io/en/latest),
 written in Python, but the ideal framework that runs in Scala on top of Spark
