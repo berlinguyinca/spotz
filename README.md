@@ -44,10 +44,18 @@ Currently the following solvers have been implemented:
 
 Using this framework consists of writing the following boilerplate code:
 
-0. Import the default package classes
-1. Define the objective function
+0. Import the default definitions inside spotz preamble.
+1. Define the objective function.
 2. Define the space of hyperparameter values that you wish to search.
 3. Select the solver.
+
+## Imports
+
+Import the default definitions inside the spotz preamble object
+
+```scala
+import com.eharmony.spotz.Preamble._
+```
 
 ## Objective Function Trait
 
@@ -66,8 +74,11 @@ the point and the loss.  This function must simply implement the
 abstract representation of the current hyperparameter values and is passed
 into the trait through the apply method.  The loss is the value returned from
 evaluating the objective function on that point.  The framework default
-implementation provides a ```Point``` class for the ```P``` type parameter and uses
-```Double``` as the loss value.
+implementation provides a ```Point``` class for the ```P``` type parameter and 
+uses ```Double``` as the loss value.  The Spotz framework defines the default
+type for ```P``` to be ```com.eharmony.spotz.Preamble.Point```, inside the
+package class.  Importing the default definitions within the Preamble object
+is important for this to work.
 
 The Branin-Hoo function is shown here as a simple example.
 Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.

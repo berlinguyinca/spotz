@@ -1,10 +1,7 @@
 package com.eharmony.spotz
 
-import scala.math.Ordering
-import scala.language.implicitConversions
-
 /**
-  * Implicit definitions that define the default implementation of a point of hyper parameter values.
+  * Definitions that define the default implementation of a point of hyper parameter values.
   *
   * @author vsuthichai
   */
