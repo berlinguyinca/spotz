@@ -17,29 +17,29 @@ trait ExampleRunner {
 
 trait ParExampleRunner extends ExampleRunner {
   override def randomSearch(objective: Objective[Point, Double], params: Map[String, RandomSampler[_]], stop: StopStrategy, numBatchTrials: Int) = {
-    val optimizer = new ParRandomSearch[Point, Double](params, stop, numBatchTrials)
-    optimizer.minimize(objective)
+    val optimizer = new ParRandomSearch[Point, Double](stop, numBatchTrials)
+    optimizer.minimize(objective, params)
   }
 
   override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int): GridSearchResult[Point, Double] = {
-    val optimizer = new ParGridSearch[Point, Double](params, numBatchTrials)
-    optimizer.minimize(objective)
+    val optimizer = new ParGridSearch[Point, Double](numBatchTrials)
+    optimizer.minimize(objective, params)
   }
 }
 
 trait SparkExampleRunner extends ExampleRunner {
   override def randomSearch(objective: Objective[Point, Double], params: Map[String, RandomSampler[_]], stop: StopStrategy, numBatchTrials: Int) = {
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("Spark Random Search"))
-    val optimizer = new SparkRandomSearch[Point, Double](sc, params, stop, numBatchTrials)
-    val result = optimizer.minimize(objective)
+    val optimizer = new SparkRandomSearch[Point, Double](sc, stop, numBatchTrials)
+    val result = optimizer.minimize(objective, params)
     sc.stop()
     result
   }
 
   override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int) = {
     val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("Spark Grid Search"))
-    val optimizer = new SparkGridSearch[Point, Double](sc, params, numBatchTrials)
-    val result = optimizer.minimize(objective)
+    val optimizer = new SparkGridSearch[Point, Double](sc, numBatchTrials)
+    val result = optimizer.minimize(objective, params)
     sc.stop()
     result
   }
