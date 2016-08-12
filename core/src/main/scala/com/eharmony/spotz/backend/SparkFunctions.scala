@@ -8,7 +8,7 @@ import org.apache.spark.SparkContext
 import scala.reflect.ClassTag
 
 /**
-  * @author vsuthichai
+  * Use Spark to paralellize the optimizer computation.
   */
 trait SparkFunctions extends BackendFunctions {
   @transient val sc: SparkContext

@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 /**
   * This trait contains the functions that are executed by the distributed computation framework.  Currently
   * Spark and parallel collections are supported.  All optimizers will delegate to these functions to parallelize
-  * computation.
+  * the optimization computation.
   *
   * @author vsuthichai
   */

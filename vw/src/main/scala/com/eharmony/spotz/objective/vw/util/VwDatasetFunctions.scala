@@ -9,16 +9,11 @@ import scala.collection.mutable
 import scala.io.Source
 
 /**
-  * @author vsuthichai
+  * Create and save a cache file given a VW dataset.  The implication of saving means that
+  * the cache file is added to the SparkContext such that it can be retrieved on worker nodes.
+  * If Spark is not being used, ie. parallel collections are being used, then the cache file
+  * is just saved locally to the file system.
   */
-trait FSVwDatasetFunctions extends VwDatasetFunctions with FileSystemFunctions {
-  override def getCache(name: String) = get(name)
-}
-
-trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions {
-  override def getCache(name: String) = get(name)
-}
-
 trait VwDatasetFunctions extends FileFunctions {
   def saveAsCache(inputIterator: Iterator[String]): String = saveAsCache(inputIterator, "dataset.cache")
   def saveAsCache(inputIterable: Iterable[String]): String = saveAsCache(inputIterable.toIterator)
@@ -48,6 +43,17 @@ trait VwDatasetFunctions extends FileFunctions {
   def getCache(name: String): File = get(name)
 }
 
+trait FSVwDatasetFunctions extends VwDatasetFunctions with FileSystemFunctions {
+  override def getCache(name: String) = get(name)
+}
+
+trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions {
+  override def getCache(name: String) = get(name)
+}
+
+/**
+  * Perform kFold CrossValidation on VW Dataset.
+  */
 trait VwCrossValidation extends VwDatasetFunctions {
   def kFold(inputPath: String, folds: Int): Map[Int, (String, String)] = {
     val enumeratedVwInput = Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines()

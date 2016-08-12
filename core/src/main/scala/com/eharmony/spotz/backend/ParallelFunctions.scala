@@ -7,7 +7,7 @@ import com.eharmony.spotz.optimizer.random.RandomSpace
 import scala.reflect.ClassTag
 
 /**
-  * @author vsuthichai
+  * Use scala parallel collections to parallelize the optimizer computation.
   */
 trait ParallelFunctions extends BackendFunctions {
   protected override def bestRandomPointAndLoss[P, L](startIndex: Long,

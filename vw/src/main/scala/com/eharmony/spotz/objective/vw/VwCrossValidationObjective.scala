@@ -11,63 +11,14 @@ import scala.io.Source
 /**
   * @author vsuthichai
   */
-class SparkVwCrossValidationObjective(
-    @transient val sc: SparkContext,
-    numFolds: Int,
-    vwDataset: Iterator[String],
-    vwTrainParamsString: Option[String],
-    vwTestParamsString: Option[String])
-  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
-    with SparkVwDatasetFunctions {
-
-  def this(sc: SparkContext,
-           numFolds: Int,
-           vwDataset: Iterable[String],
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(sc, numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
-  }
-
-  def this(sc: SparkContext,
-           numFolds: Int,
-           vwDatasetPath: String,
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(sc, numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
-  }
-}
-
-class VwCrossValidationObjective(
-    numFolds: Int,
-    vwDataset: Iterator[String],
-    vwTrainParamsString: Option[String],
-    vwTestParamsString: Option[String])
-  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
-    with FSVwDatasetFunctions {
-
-  def this(numFolds: Int,
-           vwDataset: Iterable[String],
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
-  }
-
-  def this(numFolds: Int,
-           vwDatasetPath: String,
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
-  }
-}
-
 abstract class AbstractVwCrossValidationObjective(
     val numFolds: Int,
     val vwDataset: Iterator[String],
     vwTrainParamsString: Option[String],
     vwTestParamsString: Option[String])
   extends Objective[Point, Double]
-    with VwFunctions
-    with VwCrossValidation {
+  with VwFunctions
+  with VwCrossValidation {
 
   def this(numFolds: Int,
            vwDataset: Iterable[String],
@@ -137,5 +88,54 @@ abstract class AbstractVwCrossValidationObjective(
     //logInfo(s"Cross validated avg loss: $crossValidatedAvgLoss")
 
     crossValidatedAvgLoss
+  }
+}
+
+class SparkVwCrossValidationObjective(
+    @transient val sc: SparkContext,
+    numFolds: Int,
+    vwDataset: Iterator[String],
+    vwTrainParamsString: Option[String],
+    vwTestParamsString: Option[String])
+  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
+    with SparkVwDatasetFunctions {
+
+  def this(sc: SparkContext,
+           numFolds: Int,
+           vwDataset: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
+  }
+
+  def this(sc: SparkContext,
+           numFolds: Int,
+           vwDatasetPath: String,
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+  }
+}
+
+class VwCrossValidationObjective(
+    numFolds: Int,
+    vwDataset: Iterator[String],
+    vwTrainParamsString: Option[String],
+    vwTestParamsString: Option[String])
+  extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
+    with FSVwDatasetFunctions {
+
+  def this(numFolds: Int,
+           vwDataset: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
+  }
+
+  def this(numFolds: Int,
+           vwDatasetPath: String,
+           vwTrainParamsString: Option[String],
+           vwTestParamsString: Option[String]) = {
+    this(numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
   }
 }

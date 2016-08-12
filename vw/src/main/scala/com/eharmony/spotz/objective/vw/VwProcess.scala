@@ -4,9 +4,19 @@ import com.eharmony.spotz.util.RegexUtil.floatingPointRegex
 import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
 
 /**
- * @author vsuthichai
- */
+  * A VW Process run.  The parameters are passed as a string in the exact same
+  * way they are passed as args on the vw command line.
+  *
+  * @param params vw args
+  */
 case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
+
+  /**
+    * Execute the VW process and return a VWResult object with the VW exit code,
+    * stdout, and stderr, and average loss.
+    *
+    * @return a VWResult object
+    */
   def apply(): VwResult = {
     val processResult = super.apply()
 
@@ -16,12 +26,17 @@ case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
              averageLoss(processResult.stderr))
   }
 
+  /**
+    * Parse the average loss using a regex.
+    *
+    * @param stderr
+    * @return
+    */
   private def averageLoss(stderr: String): Option[Double] = {
     VwProcess.avgLossRegex.findFirstMatchIn(stderr).map(_.group(1).toDouble)
   }
 
   // TODO: What else is important that should be returned as part of the VwResult?
-
   override def toString = s"vw $params"
 }
 
