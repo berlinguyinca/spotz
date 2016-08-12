@@ -53,7 +53,6 @@ trait VwHoldoutRandomSearch extends VwHoldout with ExampleRunner {
 }
 
 trait VwHoldoutGridSearch extends VwHoldout with ExampleRunner {
-
   val space = Map(
     ("l", Range.Double(0, 1, 0.001))
   )

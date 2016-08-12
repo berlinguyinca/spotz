@@ -15,5 +15,11 @@ object DurationUtils {
     .appendMillis().appendSuffix("ms")
     .toFormatter
 
+  /**
+    * Utility function to format a duration.
+    *
+    * @param duration
+    * @return
+    */
   def format(duration: Duration) = formatter.print(duration.toPeriod)
 }

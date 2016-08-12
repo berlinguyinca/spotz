@@ -2,14 +2,17 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.Preamble
 import Preamble._
+import com.eharmony.spotz.examples.{ExampleRunner, GridSearchRunner}
+import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw._
-import com.eharmony.spotz.optimizer.grid.{GridSpace, ParGridSearch}
-import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
-import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSpace, SparkRandomSearch}
+import com.eharmony.spotz.optimizer.grid.{GridSearchResult, GridSpace, ParGridSearch}
+import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
+import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSearchResult, RandomSpace, SparkRandomSearch}
 
 /**
   * @author vsuthichai
   */
+/*
 object VwCrossValidation {
   def randomSearch(args: Array[String]) = {
     val trials = args(1).toInt
@@ -44,7 +47,7 @@ object VwCrossValidation {
     val trials = args(1).toInt
     val folds = args(2).toInt
     val vwDataset = args(3)
-/*
+
     import org.apache.spark.{SparkConf, SparkContext}
 
     val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
@@ -52,7 +55,7 @@ object VwCrossValidation {
     val optimizer = new GridSearch[Point, Double]() with SparkFunctions {
       @transient val sparkContext = sc
     }
-    */
+
     val optimizer = new ParGridSearch[Point, Double]()
 
     val objective = new VwCrossValidationObjective(
@@ -80,3 +83,34 @@ object VwCrossValidation {
     println(result)
   }
 }
+*/
+/*
+trait VwCrossValidation {
+
+}
+
+trait VwCrossValidationGridSearch extends ExampleRunner {
+  val hyperParmeters = Map(
+    ("l", Range.Double(0.0, 1.0, 0.1))
+  )
+
+  val objective =
+}
+
+trait VwCrossValidationRandomSearch extends ExampleRunner {
+
+}
+
+object VwCrossValidationSparkGridSearch extends VwCrossValidationGridSearch with GridSearchRunner {
+  override val hyperParameters: Map[String, Iterable[AnyVal]] = _
+  override val objective: Objective[Point, Double] = _
+  override val numBatchTrials: Int = _
+
+  override def randomSearch(objective: Objective[Point, Double], params: Map[String, RandomSampler[_]], stop: StopStrategy, numBatchTrials: Int): RandomSearchResult[Point, Double] = ???
+
+  override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int): GridSearchResult[Point, Double] = ???
+}
+object VwCrossValidationParGridSearch
+object VwCrossValidationSparkRandomSearch
+object VwCrossValidationParRandomSearch
+*/

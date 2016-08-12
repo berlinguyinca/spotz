@@ -8,7 +8,7 @@ import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
  */
 case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
   def apply(): VwResult = {
-    val processResult: ProcessResult = run()
+    val processResult = super.apply()
 
     VwResult(processResult.exitCode,
              processResult.stdout,
@@ -16,7 +16,7 @@ case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
              averageLoss(processResult.stderr))
   }
 
-  private[this] def averageLoss(stderr: String): Option[Double] = {
+  private def averageLoss(stderr: String): Option[Double] = {
     VwProcess.avgLossRegex.findFirstMatchIn(stderr).map(_.group(1).toDouble)
   }
 
@@ -42,9 +42,9 @@ object VwProcess {
   * as a string to the class constructor of VwProcess.
   */
 class VwProcessBuilder {
-  private[this] val sb = new StringBuilder
+  private val sb = new StringBuilder
 
-  private[this] def append(param: String): this.type = {
+  private def append(param: String): this.type = {
     sb.append(param)
     this
   }
