@@ -1,6 +1,5 @@
 package com.eharmony.spotz.optimizer.grid
 
-import com.eharmony.spotz.optimizer.Space
 import com.eharmony.spotz.util.Logging
 
 import scala.collection.mutable.ArrayBuffer
@@ -16,7 +15,7 @@ import scala.language.postfixOps
   * @author vsuthichai
   */
 class GridSpace[P](gridParams: Map[String, Iterable[_]])
-                  (implicit factory: (Map[String, _]) => P) extends Space[P] with Logging {
+                  (implicit factory: (Map[String, _]) => P) extends Serializable with Logging {
 
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
@@ -39,29 +38,6 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
 
   var i: Long = 0
 
-  override def sample: P = {
-    if (isExhausted)
-      throw new NoSuchElementException("Grid space has been exhausted of all values.")
-
-    val point = apply(i)
-
-    i += 1
-
-    point
-  }
-
-  override def sample(howMany: Int): Iterable[P] = {
-    if (howMany < 1)
-      throw new IllegalArgumentException("Sample size must be greater than 0")
-
-    if (isExhausted)
-      throw new NoSuchElementException("Grid space has been exhausted of all values.")
-
-    Seq.fill(scala.math.min(howMany, (max - i).toInt))(sample)
-  }
-
-  def isExhausted: Boolean = i >= max
-
   def length: Long = max
 
   def apply(idx: Long): P = {
@@ -75,6 +51,20 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
 
     factory(hyperParamValues)
   }
+/*
+  override def hasNext: Boolean = i < max
+
+  override def next(): P = {
+    if (!hasNext)
+      throw new NoSuchElementException("Grid space has been exhausted of all values.")
+
+    val point = apply(i)
+
+    i += 1
+
+    point
+  }
+  */
 }
 
 case class GridRow(label: String, values: Seq[_])

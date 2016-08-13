@@ -10,6 +10,7 @@ import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
 import scala.math.Ordering
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * Random search implementation.
@@ -30,18 +31,31 @@ abstract class RandomSearch[P, L](
   with BackendFunctions
   with Logging {
 
+  /**
+    * This sample method is used on worker nodes.
+    *
+    * @param params
+    * @param theSeed
+    * @return
+    */
+  private def sample(params: Map[String, RandomSampler[_]], theSeed: Long): P = {
+    val rng = new Random(theSeed)
+    // Get rid of the first sample due to low entropy
+    rng.nextDouble()
+    factory(params.map { case (label, sampler) => (label, sampler(rng)) } )
+  }
+
   override def optimize(objective: Objective[P, L],
                         paramSpace: Map[String, RandomSampler[_]],
                         reducer: Reducer[(P, L)])
                        (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
-    val space = new RandomSpace[P](paramSpace, seed)
     val startTime = DateTime.now()
-    val firstPoint = space.sample
+    val firstPoint = sample(paramSpace, seed)
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count
-    randomSearch(objective = objective, space = space, reducer = reducer, startTime = startTime,
-      bestPointSoFar = firstPoint, bestLossSoFar = firstLoss, trialsSoFar = 1)
+    randomSearch(objective = objective, reducer = reducer, startTime = startTime,
+      bestPointSoFar = firstPoint, paramSpace = paramSpace, bestLossSoFar = firstLoss, trialsSoFar = 1)
   }
 
   /**
@@ -51,7 +65,6 @@ abstract class RandomSearch[P, L](
     * duration.
     *
     * @param objective the objective function
-    * @param space representation of hyper parameter space from which to sample hyper parameter points
     * @param reducer the function used to reduce points
     * @param startTime the time at which this optimization job started
     * @param bestPointSoFar the best point discovered so far
@@ -63,9 +76,9 @@ abstract class RandomSearch[P, L](
     */
   @tailrec
   private[this] def randomSearch(objective: Objective[P, L],
-                                 space: RandomSpace[P],
                                  reducer: Reducer[(P, L)],
                                  startTime: DateTime,
+                                 paramSpace: Map[String, RandomSampler[_]],
                                  bestPointSoFar: P,
                                  bestLossSoFar: L,
                                  trialsSoFar: Long)
@@ -86,10 +99,10 @@ abstract class RandomSearch[P, L](
         //val batchSize = nextBatchSize(None, elapsedTime, currentBatchSize, trialsSoFar, null, stopStrategy.getMaxTrials)
 
         val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
-          bestRandomPointAndLoss(trialsSoFar, batchSize, objective, space, reducer))
+          bestRandomPointAndLoss(trialsSoFar, batchSize, objective, reducer, paramSpace, seed, sample))
 
         // Last 3 args maintain the state
-        randomSearch(objective, space, reducer, startTime, bestPoint, bestLoss, trialsSoFar + batchSize)
+        randomSearch(objective, reducer, startTime, paramSpace, bestPoint, bestLoss, trialsSoFar + batchSize)
     }
   }
 }

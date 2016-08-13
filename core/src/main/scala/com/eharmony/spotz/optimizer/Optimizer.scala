@@ -96,7 +96,8 @@ trait AbstractOptimizer[P, L, S, R <: OptimizerResult[P, L]] extends Optimizer[P
 }
 
 /**
-  * Abstract result of an optimizer.  All other optimization algorithms' results should inherit from this.
+  * Result of an optimizer.  All other optimization algorithms' results should inherit from this.
+  * Minimally, this result contains the best point and the best loss.
   *
   * @param bestPoint the best point
   * @param bestLoss the best loss

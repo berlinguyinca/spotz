@@ -4,10 +4,18 @@ import com.eharmony.spotz.Preamble.Point
 
 import scala.collection.mutable
 
-/**
-  * @author vsuthichai
-  */
 trait VwFunctions {
+
+  /**
+    * Merge hyperparameters from the point object into VW parameter map.  Hyperparameter
+    * values will overwrite a map value during the merge if a hyerparameter label is the
+    * same as a map key.
+    *
+    * @param vwParamMap a Map[String, String] where the key is a VW argument and the value
+    *                   is the argument value.
+    * @param point a point object representing the hyperparameter values
+    * @return a new Map[String, String] which is the result of merging the vwParamMap and the point.
+    */
   def mergeVwParams(vwParamMap: Map[String, String], point: Point): Map[String, _] = {
     val vwParamsMutableMap = mutable.Map[String, Any]()
 

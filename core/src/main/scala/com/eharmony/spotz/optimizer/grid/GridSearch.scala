@@ -41,7 +41,7 @@ abstract class GridSearch[P, L]
                                  (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
     val space = new GridSpace[P](paramSpace)
     val startTime = DateTime.now()
-    val firstPoint = space.sample
+    val firstPoint = space(0)
     val firstLoss = objective(firstPoint)
 
     // Last three arguments maintain the best point and loss and the trial count

@@ -43,10 +43,16 @@ trait VwDatasetFunctions extends FileFunctions {
   def getCache(name: String): File = get(name)
 }
 
+/**
+  * Save VW Cache to file system.
+  */
 trait FSVwDatasetFunctions extends VwDatasetFunctions with FileSystemFunctions {
   override def getCache(name: String) = get(name)
 }
 
+/**
+  * Add VW Cache to SparkContext.
+  */
 trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions {
   override def getCache(name: String) = get(name)
 }

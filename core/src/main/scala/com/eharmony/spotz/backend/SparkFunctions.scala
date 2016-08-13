@@ -1,11 +1,12 @@
 package com.eharmony.spotz.backend
 
 import com.eharmony.spotz.objective.Objective
+import com.eharmony.spotz.optimizer.RandomSampler
 import com.eharmony.spotz.optimizer.grid.GridSpace
-import com.eharmony.spotz.optimizer.random.RandomSpace
 import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
+import scala.util.Random
 
 /**
   * Use Spark to paralellize the optimizer computation.
@@ -33,25 +34,26 @@ trait SparkFunctions extends BackendFunctions {
     *
     * @param batchSize the number of points to sample from the space
     * @param objective the function on which a point is applied
-    * @param space the space object from which to sample the points
     * @param reducer the reducer function to use on all the various points and losses
     *                generated
     * @return the best point with the best loss
     */
-  protected override def bestRandomPointAndLoss[P, L](startIndex: Long,
-                                                      batchSize: Long,
-                                                      objective: Objective[P, L],
-                                                      space: RandomSpace[P],
-                                                      reducer: ((P, L), (P, L)) => (P, L)): (P, L) = {
+  protected override def bestRandomPointAndLoss[P, L](
+      startIndex: Long,
+      batchSize: Long,
+      objective: Objective[P, L],
+      reducer: ((P, L), (P, L)) => (P, L),
+      hyperParams: Map[String, RandomSampler[_]],
+      seed: Long = 0,
+      sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
+
     assert(batchSize > 0, "batchSize must be greater than 0")
 
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
 
     val pointAndLossRDD = rdd.mapPartitions { partition =>
       partition.map { trial =>
-        // Create new space with new seed to avoid every executor having the same rng state.
-        val rngModifiedSpace = space.setSeed(space.seed + trial)
-        val point = rngModifiedSpace.sample
+        val point = sampleFunction(hyperParams, seed + trial)
         (point, objective(point))
       }
     }
@@ -66,7 +68,7 @@ trait SparkFunctions extends BackendFunctions {
                                                     reducer: ((P, L), (P, L)) => (P, L))
                                                     (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
-    val pointAndLossRDD = rdd.map { case idx =>
+    val pointAndLossRDD = rdd.map { idx =>
       val point = space(idx)
       (point, objective(point))
     }

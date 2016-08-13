@@ -8,7 +8,7 @@ import scala.math._
 
 
 /**
-  * @author vsuthichai
+  * The Ackley function described here: <link>http://www.sfu.ca/~ssurjano/ackley.html</link>.
   */
 class AckleyObjective extends Objective[Point, Double] {
   def apply(p: Point): Double = {

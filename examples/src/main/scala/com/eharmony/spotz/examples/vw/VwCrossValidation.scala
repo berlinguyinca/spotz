@@ -7,7 +7,6 @@ import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw._
 import com.eharmony.spotz.optimizer.grid.{GridSearchResult, GridSpace, ParGridSearch}
 import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
-import com.eharmony.spotz.optimizer.random.{RandomSearch, RandomSearchResult, RandomSpace, SparkRandomSearch}
 
 /**
   * @author vsuthichai
