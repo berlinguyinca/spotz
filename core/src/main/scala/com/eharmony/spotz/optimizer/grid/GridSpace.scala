@@ -10,38 +10,38 @@ import scala.language.postfixOps
   * cartesian product space of the grid is not ballooned into memory, but is instead computed
   * iteratively on demand through the sample method.  This is intended to be used in conjunction
   * with <code>GridSearch</code> in a single thread on the driver and not on the executors.
-  * Thusly, it is not thread safe.
+  *
+  * The alogrithm details are documented here: <link>http://phrogz.net/lazy-cartesian-product</code>
   *
   * @author vsuthichai
   */
-class GridSpace[P](gridParams: Map[String, Iterable[_]])
-                  (implicit factory: (Map[String, _]) => P) extends Serializable with Logging {
+class GridSpace[P](
+    gridParams: Map[String, Iterable[_]])
+    (implicit factory: (Map[String, _]) => P)
+  extends Serializable
+  with Logging {
 
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
-  // Expand the entire grid space.  The memory required is linear in the sum of lengths of all the iterables
+  /** Expand the each grid row.  The memory required is linear in the sum of lengths of all the iterables */
   private val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
 
-  // pre-compute the length of each grid iterable, indexed into a Seq
+  /** pre-compute the length of each grid iterable, indexed into a Seq */
   private val gridLengths = gridSpace.map { case (label, seq) => seq.length.toLong }
 
-  // pre-compute the divisible factor and store along with the length inside GridProperty
-  // http://phrogz.net/lazy-cartesian-product
+  /** pre-compute the divisible factor and store along with the length inside GridProperty */
   private val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l, b) =>
     if (b.isEmpty) GridProperty(1L, l) +=: b
     else GridProperty(b.head.length * b.head.factor, l) +=: b
   }
 
-  val max = gridLengths.product
+  val length = gridLengths.product
+  val size = length
 
-  info(s"$max hyper parameter tuples found in GridSpace")
-
-  var i: Long = 0
-
-  def length: Long = max
+  info(s"$size hyper parameter tuples found in GridSpace")
 
   def apply(idx: Long): P = {
-    if (idx < 0 || idx >= max)
+    if (idx < 0 || idx >= size)
       throw new IndexOutOfBoundsException(idx.toString)
 
     val gridIndices = gridProperties.map { case GridProperty(factor, length) => (idx / factor) % length }
@@ -51,20 +51,6 @@ class GridSpace[P](gridParams: Map[String, Iterable[_]])
 
     factory(hyperParamValues)
   }
-/*
-  override def hasNext: Boolean = i < max
-
-  override def next(): P = {
-    if (!hasNext)
-      throw new NoSuchElementException("Grid space has been exhausted of all values.")
-
-    val point = apply(i)
-
-    i += 1
-
-    point
-  }
-  */
 }
 
 case class GridRow(label: String, values: Seq[_])
