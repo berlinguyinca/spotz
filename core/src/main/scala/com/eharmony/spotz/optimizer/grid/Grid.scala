@@ -12,7 +12,7 @@ import scala.language.postfixOps
   *
   * The algorithm details are documented here: <link>http://phrogz.net/lazy-cartesian-product</code>
   *
-  * Accessing elements of the grid work similarly to accessing elements inside an IndexedSeq.
+  * Accessing elements of the grid is similar to accessing elements inside an IndexedSeq.
   *
   * {{{
   *   import com.eharmony.spotz.Preamble._
@@ -28,7 +28,10 @@ import scala.language.postfixOps
   * }}}
   *
   * Given the factory function which defines the Map transformation, a point object P of the caller's
-  * implementation can be instantiated.
+  * implementation can be instantiated: (Map[String, _]) => P.  This is passed implicitly.
+  *
+  * The <code>GridSearch</code> algorithm will use this class to iterate through all the grid element
+  * points and pass them for evaluation to the objective function.
   *
   * @author vsuthichai
   */
