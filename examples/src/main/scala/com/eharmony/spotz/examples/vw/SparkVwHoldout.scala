@@ -2,7 +2,7 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.objective.vw.SparkVwHoldoutObjective
-import com.eharmony.spotz.optimizer.grid.{GridSpace, SparkGridSearch}
+import com.eharmony.spotz.optimizer.grid.{Grid, SparkGridSearch}
 import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
 import org.apache.spark.{SparkConf, SparkContext}
 

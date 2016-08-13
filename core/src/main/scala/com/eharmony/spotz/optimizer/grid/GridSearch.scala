@@ -39,7 +39,7 @@ abstract class GridSearch[P, L]
                                   paramSpace: Map[String, Iterable[Any]],
                                   reducer: Reducer[(P, L)])
                                  (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
-    val space = new GridSpace[P](paramSpace)
+    val space = new Grid[P](paramSpace)
     val startTime = DateTime.now()
     val firstPoint = space(0)
     val firstLoss = objective(firstPoint)
@@ -49,7 +49,7 @@ abstract class GridSearch[P, L]
   }
 
   @tailrec
-  private def gridSearch(objective: Objective[P, L], space: GridSpace[P], reducer: Reducer[(P, L)],
+  private def gridSearch(objective: Objective[P, L], space: Grid[P], reducer: Reducer[(P, L)],
                          startTime: DateTime, bestPointSoFar: P, bestLossSoFar: L, trialsSoFar: Long)
                         (implicit c: ClassTag[P], p: ClassTag[L]): GridSearchResult[P, L] = {
     val endTime = DateTime.now()

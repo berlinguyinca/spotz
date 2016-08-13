@@ -2,7 +2,7 @@ package com.eharmony.spotz.backend
 
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.RandomSampler
-import com.eharmony.spotz.optimizer.grid.GridSpace
+import com.eharmony.spotz.optimizer.grid.Grid
 
 import scala.reflect.ClassTag
 
@@ -25,7 +25,7 @@ trait BackendFunctions {
   protected def bestGridPointAndLoss[P, L](startIndex: Long,
                                            batchSize: Long,
                                            objective: Objective[P, L],
-                                           space: GridSpace[P],
+                                           space: Grid[P],
                                            reducer: ((P, L), (P, L)) => (P, L))
                                            (implicit c: ClassTag[P], p: ClassTag[L]): (P, L)
 }

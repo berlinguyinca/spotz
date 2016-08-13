@@ -8,12 +8,11 @@ import scala.language.postfixOps
 /**
   * This grid implementation computes hyper parameter values in an iterative manner.  The entire
   * cartesian product space of the grid is not ballooned into memory, but is instead computed
-  * iteratively on demand through the sample method.  This is intended to be used in conjunction
-  * with <code>GridSearch</code> in a single thread on the driver and not on the executors.
+  * on demand through the apply method.
   *
-  * The alogrithm details are documented here: <link>http://phrogz.net/lazy-cartesian-product</code>
+  * The algorithm details are documented here: <link>http://phrogz.net/lazy-cartesian-product</code>
   *
-  * Accesing elements of the grid work similarly to accessing elements inside an IndexedSeq.
+  * Accessing elements of the grid work similarly to accessing elements inside an IndexedSeq.
   *
   * {{{
   *   import com.eharmony.spotz.Preamble._
@@ -33,7 +32,7 @@ import scala.language.postfixOps
   *
   * @author vsuthichai
   */
-class GridSpace[P](
+class Grid[P](
     gridParams: Map[String, Iterable[_]])
     (implicit factory: (Map[String, _]) => P)
   extends Serializable
@@ -62,7 +61,7 @@ class GridSpace[P](
     if (idx < 0 || idx >= size)
       throw new IndexOutOfBoundsException(idx.toString)
 
-    val gridIndices = gridProperties.map { case GridProperty(factor, length) => (idx / factor) % length }
+    val gridIndices = gridProperties.map { case GridProperty(factor, this.length) => (idx / factor) % length }
     val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
       (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex.toInt))
     }.toMap

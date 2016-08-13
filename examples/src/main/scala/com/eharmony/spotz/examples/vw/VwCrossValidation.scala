@@ -5,7 +5,7 @@ import Preamble._
 import com.eharmony.spotz.examples.{ExampleRunner, GridSearchRunner}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw._
-import com.eharmony.spotz.optimizer.grid.{GridSearchResult, GridSpace, ParGridSearch}
+import com.eharmony.spotz.optimizer.grid.{GridSearchResult, Grid, ParGridSearch}
 import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
 
 /**
