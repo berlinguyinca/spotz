@@ -13,6 +13,24 @@ import scala.language.postfixOps
   *
   * The alogrithm details are documented here: <link>http://phrogz.net/lazy-cartesian-product</code>
   *
+  * Accesing elements of the grid work similarly to accessing elements inside an IndexedSeq.
+  *
+  * {{{
+  *   import com.eharmony.spotz.Preamble._
+  *
+  *   val grid = new GridSpace(Map(
+  *     ("x1", Range.Double(0.0, 1.0, 0.1)),
+  *     ("x2", Range.Double(0.0, 1.0, 0.1))
+  *   )
+  *
+  *   val firstElement = grid(0)          // Map(x1 -> 0.0, x2 -> 0.0)
+  *   val lastElement = grid(99)          // Map(x1 -> 1.0, x2 -> 1.0)
+  *   val lastElementPlusOne = grid(100)  // IndexOutOfBoundsException
+  * }}}
+  *
+  * Given the factory function which defines the Map transformation, a point object P of the caller's
+  * implementation can be instantiated.
+  *
   * @author vsuthichai
   */
 class GridSpace[P](
