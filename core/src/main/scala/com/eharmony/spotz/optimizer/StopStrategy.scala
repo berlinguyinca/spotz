@@ -60,21 +60,15 @@ class MaxTrialsOrMaxDurationStop(maxTrials: Long, maxDuration: Duration) extends
   * Stop after an optimizer has finished running.  This should never be used for RandomSearch because
   * it will never complete without some specific stopping criteria.
   */
-object OptimizerFinishes extends StopStrategy {
+class OptimizerFinishes extends StopStrategy {
   override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
     optimizerState.optimizerFinished
   }
 }
 
-/**
-  * Stop after some criteria defined by the user.
-  *
-  * @param f
-  * @tparam P
-  * @tparam L
-  */
-class StopStrategyPredicate[P, L](f: OptimizerState[P, L] => Boolean) {
-  def shouldStop(stopContext: OptimizerState[P, L]) = f(stopContext)
+
+class StopStrategyPredicate(f: OptimizerState[_, _] => Boolean) extends StopStrategy {
+  override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = f(optimizerState)
 }
 
 /**
@@ -86,5 +80,6 @@ object StopStrategy {
   def stopAfterMaxTrialsOrMaxDuration(maxTrials: Long, maxDuration: Duration): StopStrategy = {
     new MaxTrialsOrMaxDurationStop(maxTrials, maxDuration)
   }
-  def stopWhenOptimizerFinishes: StopStrategy = OptimizerFinishes
+  def stopWhenOptimizerFinishes: StopStrategy = new OptimizerFinishes
+  def stopWhenPredicateIsTrue(f: OptimizerState[_, _] => Boolean): StopStrategy = new StopStrategyPredicate(f)
 }

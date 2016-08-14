@@ -24,7 +24,6 @@ class BraninObjective extends Objective[Point, Double] {
   val s = 10
   val t = 1 / (8 * Pi)
 
-
   override def apply(point: Point): Double = {
     val x1 = point.get[Double]("x1")
     val x2 = point.get[Double]("x2")
