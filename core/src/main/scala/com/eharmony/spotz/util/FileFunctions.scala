@@ -7,9 +7,9 @@ import org.apache.spark.{SparkContext, SparkFiles}
 import scala.io.Source
 
 /**
-  * Spotz provides capability to save and retrieve files from inside the objective
+  * Provide capability to save and retrieve files from inside the objective
   * functions.  Users are free to interact with the underlying file system freely as they desire,
-  * but this trait provides a layer to simplify certain details of using files with the
+  * but this trait provides a layer to simplify certain details of those file interactions with the
   * chosen backend computation engine.  The <code>save</code> methods are intended to be used
   * within an objective function's constructor code and not within its <code>apply</code> method.
   * Later when the objection function is being parallelized, the file can be retrieved with the

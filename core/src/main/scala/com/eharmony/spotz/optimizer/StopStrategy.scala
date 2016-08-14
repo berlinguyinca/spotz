@@ -11,21 +11,9 @@ sealed trait StopStrategy extends Serializable {
 
   def getMaxTrials: Long = UNLIMITED
   def getMaxDuration: Duration = FOREVER
-  def shouldStop(trialsSoFar: Long, timeSinceFirstTrial: Duration): Boolean
-}
 
-// TODO
-/**
-  * A context object describing the current state of an optimizer.  It keeps track of state
-  * such as the best point, the best loss, elapsed time, trials executed so far, and other
-  * important information that could be used to specify some stopping criteria for the
-  * optimizer.
-  *
-  * @param foo
-  * @tparam P
-  * @tparam L
-  */
-case class StopContext[P, L](foo: Any)
+  def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean
+}
 
 /**
   * Stop after a maximum number of executed trials.
@@ -35,8 +23,8 @@ case class StopContext[P, L](foo: Any)
 class MaxTrialsStop(maxTrials: Long) extends StopStrategy {
   assert(maxTrials > 0, "Must specify greater than 0 trials.")
   override def getMaxTrials: Long = maxTrials
-  override def shouldStop(trialsSoFar: Long, durationSinceFirstTrial: Duration): Boolean = {
-    trialsSoFar >= maxTrials
+  override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
+    optimizerState.trialsSoFar >= maxTrials
   }
 }
 
@@ -49,8 +37,8 @@ class TimedStop(maxDuration: Duration) extends StopStrategy {
   assert(maxDuration.toStandardSeconds.getSeconds > 0, "Must specify a longer duration")
 
   override def getMaxDuration: Duration = maxDuration
-  override def shouldStop(trialsSoFar: Long, durationSinceFirstTrial: Duration): Boolean = {
-    durationSinceFirstTrial.getMillis >= maxDuration.getMillis
+  override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
+    optimizerState.elapsedTime.getMillis >= maxDuration.getMillis
   }
 }
 
@@ -63,16 +51,21 @@ class TimedStop(maxDuration: Duration) extends StopStrategy {
 class MaxTrialsOrMaxDurationStop(maxTrials: Long, maxDuration: Duration) extends StopStrategy {
   override def getMaxTrials: Long = maxTrials
   override def getMaxDuration: Duration = maxDuration
-  override def shouldStop(trialsSoFar: Long, durationSinceFirstTrial: Duration): Boolean = {
-    trialsSoFar >= maxTrials || durationSinceFirstTrial.getMillis >= maxDuration.getMillis
+  override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
+    optimizerState.trialsSoFar >= maxTrials || optimizerState.elapsedTime.getMillis >= maxDuration.getMillis
   }
 }
 
+/**
+  * Stop after an optimizer has finished running.  This should never be used for RandomSearch because
+  * it will never complete without some specific stopping criteria.
+  */
 object OptimizerFinishes extends StopStrategy {
-  override def shouldStop(trialsSoFar: Long, durationSinceFirstTrial: Duration): Boolean = false
+  override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
+    optimizerState.optimizerFinished
+  }
 }
 
-// TODO
 /**
   * Stop after some criteria defined by the user.
   *
@@ -80,8 +73,8 @@ object OptimizerFinishes extends StopStrategy {
   * @tparam P
   * @tparam L
   */
-class StopStrategyPredicate[P, L](f: (StopContext[P, L]) => Boolean) {
-  def shouldStop(stopContext: StopContext[P, L]) = f(stopContext)
+class StopStrategyPredicate[P, L](f: OptimizerState[P, L] => Boolean) {
+  def shouldStop(stopContext: OptimizerState[P, L]) = f(stopContext)
 }
 
 /**

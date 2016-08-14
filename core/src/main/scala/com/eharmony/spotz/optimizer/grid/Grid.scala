@@ -44,34 +44,43 @@ class Grid[P](
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
   /** Expand the each grid row.  The memory required is linear in the sum of lengths of all the iterables */
-  private val gridSpace = gridParams.map { case (label, it) => (label, it.toSeq) } toSeq
-
-  /** pre-compute the length of each grid iterable, indexed into a Seq */
-  private val gridLengths = gridSpace.map { case (label, seq) => seq.length.toLong }
-
   /** pre-compute the divisible factor and store along with the length inside GridProperty */
-  private val gridProperties = gridLengths.foldRight(ArrayBuffer[GridProperty]()) { case (l, b) =>
-    if (b.isEmpty) GridProperty(1L, l) +=: b
-    else GridProperty(b.head.length * b.head.factor, l) +=: b
-  }
+  private val gridRows = gridParams.map { case (label, it) => (label, it.toSeq) }
+    .foldRight(ArrayBuffer[GridRow]()) { case ((label, it), b) =>
+      if (b.isEmpty) GridRow(label, it, 1L, it.length.toLong) +=: b
+      else GridRow(label, it, b.head.length * b.head.factor, it.length.toLong) +=: b
+    }.toIndexedSeq
 
-  val length = gridLengths.product
+  val length = gridRows.foldLeft(1L)((product, gridRow) => product * gridRow.length)
   val size = length
 
   info(s"$size hyper parameter tuples found in GridSpace")
 
+  /**
+    *
+    * @param idx
+    * @return
+    */
   def apply(idx: Long): P = {
     if (idx < 0 || idx >= size)
       throw new IndexOutOfBoundsException(idx.toString)
 
-    val gridIndices = gridProperties.map { case GridProperty(factor, this.length) => (idx / factor) % length }
-    val hyperParamValues = gridIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
-      (gridSpace(rowIndex)._1, gridSpace(rowIndex)._2(columnIndex.toInt))
+    val gridRowIndices = gridRows.map(gridRow => (idx / gridRow.factor) % gridRow.length)
+
+    val hyperParamValues = gridRowIndices.zipWithIndex.map { case (columnIndex, rowIndex) =>
+      (gridRows(rowIndex).label, gridRows(rowIndex).values(columnIndex.toInt))
     }.toMap
 
     factory(hyperParamValues)
   }
 }
 
-case class GridRow(label: String, values: Seq[_])
-case class GridProperty(factor: Long, length: Long)
+/**
+  * This case class contains the label name and the values of any specific row within the grid.
+  *
+  * @param label
+  * @param values
+  * @param factor
+  * @param length
+  */
+case class GridRow(label: String, values: Seq[_], factor: Long, length: Long)

@@ -4,7 +4,7 @@ import org.joda.time.Duration
 import org.joda.time.format.PeriodFormatterBuilder
 
 /**
-  * Created by vsuthichai on 8/2/16.
+  * @author vsuthichai
   */
 object DurationUtils {
   val formatter = new PeriodFormatterBuilder()

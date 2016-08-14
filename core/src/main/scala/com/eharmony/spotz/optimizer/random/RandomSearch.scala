@@ -52,10 +52,18 @@ abstract class RandomSearch[P, L](
     val startTime = DateTime.now()
     val firstPoint = sample(paramSpace, seed)
     val firstLoss = objective(firstPoint)
+    val currentTime = DateTime.now()
 
-    // Last three arguments maintain the best point and loss and the trial count
-    randomSearch(objective = objective, reducer = reducer, startTime = startTime,
-      bestPointSoFar = firstPoint, paramSpace = paramSpace, bestLossSoFar = firstLoss, trialsSoFar = 1)
+    val randomSearchContext = RandomSearchContext(
+      bestPointSoFar = firstPoint,
+      bestLossSoFar = firstLoss,
+      startTime = startTime,
+      currentTime = currentTime,
+      elapsedTime = new Duration(startTime, currentTime),
+      trialsSoFar = 1,
+      optimizerFinished = false)
+
+    randomSearch(objective, reducer, paramSpace, randomSearchContext)
   }
 
   /**
@@ -66,10 +74,6 @@ abstract class RandomSearch[P, L](
     *
     * @param objective the objective function
     * @param reducer the function used to reduce points
-    * @param startTime the time at which this optimization job started
-    * @param bestPointSoFar the best point discovered so far
-    * @param bestLossSoFar the best loss discovered so far
-    * @param trialsSoFar the number of objective function evaluations performed so far
     * @param c ClassTag for P
     * @param p ClassTag for C
     * @return a <code>RandomSearchResult</code>
@@ -77,35 +81,58 @@ abstract class RandomSearch[P, L](
   @tailrec
   private[this] def randomSearch(objective: Objective[P, L],
                                  reducer: Reducer[(P, L)],
-                                 startTime: DateTime,
                                  paramSpace: Map[String, RandomSampler[_]],
-                                 bestPointSoFar: P,
-                                 bestLossSoFar: L,
-                                 trialsSoFar: Long)
+                                 rsc: RandomSearchContext[P, L])
                                 (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
-    val endTime = DateTime.now()
-    val elapsedTime = new Duration(startTime, endTime)
 
-    info(s"Best point and loss after $trialsSoFar trials and ${DurationUtils.format(elapsedTime)} : $bestPointSoFar loss: $bestLossSoFar")
+    info(s"Best point and loss after ${rsc.trialsSoFar} trials and ${DurationUtils.format(rsc.elapsedTime)} : ${rsc.bestPointSoFar} loss: ${rsc.bestLossSoFar}")
 
-    stopStrategy.shouldStop(trialsSoFar, elapsedTime) match {
+    stopStrategy.shouldStop(rsc) match {
+
       case true  =>
-        // Base case, End recursion
-        new RandomSearchResult[P, L](bestPointSoFar, bestLossSoFar, startTime, endTime, trialsSoFar, elapsedTime)
+        // Base case, end recursion, return the result
+        new RandomSearchResult[P, L](
+          bestPoint = rsc.bestPointSoFar,
+          bestLoss = rsc.bestLossSoFar,
+          startTime = rsc.startTime,
+          endTime = rsc.currentTime,
+          elapsedTime = rsc.elapsedTime,
+          totalTrials = rsc.trialsSoFar)
 
       case false =>
-        val batchSize = scala.math.min(stopStrategy.getMaxTrials - trialsSoFar, trialBatchSize)
+        val batchSize = scala.math.min(stopStrategy.getMaxTrials - rsc.trialsSoFar, trialBatchSize)
         // TODO: Adaptive batch sizing
         //val batchSize = nextBatchSize(None, elapsedTime, currentBatchSize, trialsSoFar, null, stopStrategy.getMaxTrials)
 
-        val (bestPoint, bestLoss) = reducer((bestPointSoFar, bestLossSoFar),
-          bestRandomPointAndLoss(trialsSoFar, batchSize, objective, reducer, paramSpace, seed, sample))
+        val (bestPoint, bestLoss) = reducer((rsc.bestPointSoFar, rsc.bestLossSoFar),
+          bestRandomPointAndLoss(rsc.trialsSoFar, batchSize, objective, reducer, paramSpace, seed, sample))
 
-        // Last 3 args maintain the state
-        randomSearch(objective, reducer, startTime, paramSpace, bestPoint, bestLoss, trialsSoFar + batchSize)
+        val currentTime = DateTime.now()
+        val elapsedTime = new Duration(rsc.startTime, currentTime)
+
+        val randomSearchContext = RandomSearchContext(
+          bestPointSoFar = bestPoint,
+          bestLossSoFar = bestLoss,
+          startTime = rsc.startTime,
+          currentTime = currentTime,
+          elapsedTime = elapsedTime,
+          trialsSoFar = rsc.trialsSoFar + batchSize,
+          optimizerFinished = false)
+
+        // Last argument maintain the state
+        randomSearch(objective, reducer, paramSpace, randomSearchContext)
     }
   }
 }
+
+case class RandomSearchContext[P, L](
+    bestPointSoFar: P,
+    bestLossSoFar: L,
+    startTime: DateTime,
+    currentTime: DateTime,
+    elapsedTime: Duration,
+    trialsSoFar: Long,
+    optimizerFinished: Boolean) extends OptimizerState[P, L]
 
 /**
   * This implementation uses parallel collections to evaluate the objective function.  Internally,

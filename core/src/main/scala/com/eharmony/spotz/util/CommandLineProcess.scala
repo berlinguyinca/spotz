@@ -31,8 +31,6 @@ class CommandLineProcess(cmd: String) extends Serializable {
   }
 }
 
-abstract class StreamingCommandLineProcess(cmd: String, stdin: Iterable[String])
-
 /**
   * The return value of executing <code>CommandLineProcess</code>.  Contained within
   * this result is the process exit code, stdout, and stderr

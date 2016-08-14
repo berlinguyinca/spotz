@@ -1,6 +1,7 @@
 package com.eharmony.spotz.optimizer
 
 import com.eharmony.spotz.objective.Objective
+import org.joda.time.{DateTime, Duration}
 
 import scala.math.Ordering
 import scala.reflect.ClassTag
@@ -93,6 +94,16 @@ trait AbstractOptimizer[P, L, S, R <: OptimizerResult[P, L]] extends Optimizer[P
     */
   protected def optimize(objective: Objective[P, L], space: S, reducer: Reducer[(P, L)])
                         (implicit c: ClassTag[P], p: ClassTag[L]): R
+}
+
+trait OptimizerState[P, L] {
+  val bestPointSoFar: P
+  val bestLossSoFar: L
+  val startTime: DateTime
+  val currentTime: DateTime
+  val elapsedTime: Duration
+  val trialsSoFar: Long
+  val optimizerFinished: Boolean
 }
 
 /**
