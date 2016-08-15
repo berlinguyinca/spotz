@@ -6,9 +6,9 @@ import scala.sys.process._
   * Execute a command line process.
   *
   * @param cmd the command line to execute
+  * @param stdin standard input
   */
-class CommandLineProcess(cmd: String) extends Serializable {
-  // TODO: Enhance to support stdin later
+class CommandLineProcess(cmd: String, stdin: Option[Iterator[String]]) extends Serializable {
   private val stdoutBuffer = new StringBuilder
   private val stderrBuffer = new StringBuilder
   private val processLogger = ProcessLogger(line => stdoutBuffer.append(line).append("\n"),
@@ -20,6 +20,7 @@ class CommandLineProcess(cmd: String) extends Serializable {
     * @return a ProcessResult object
     */
   def apply[R <: ProcessResult](): ProcessResult = {
+    // TODO: support stdin
     val exitCode = cmd ! processLogger
     val stdoutStr = stdoutBuffer.toString()
     val stderrStr = stderrBuffer.toString()

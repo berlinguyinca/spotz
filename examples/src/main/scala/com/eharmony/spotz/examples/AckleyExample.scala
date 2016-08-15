@@ -6,7 +6,6 @@ import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy, UniformDoubl
 
 import scala.math._
 
-
 /**
   * The Ackley function described here: <link>http://www.sfu.ca/~ssurjano/ackley.html</link>.
   */

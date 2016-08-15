@@ -3,7 +3,7 @@ package com.eharmony.spotz.objective.vw
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw.util.{FSVwDatasetFunctions, SparkVwDatasetFunctions, VwCrossValidation}
-import com.eharmony.spotz.util.FileUtil
+import com.eharmony.spotz.util.{FileUtil, Logging}
 import org.apache.spark.SparkContext
 
 import scala.io.Source
@@ -18,7 +18,8 @@ abstract class AbstractVwCrossValidationObjective(
     vwTestParamsString: Option[String])
   extends Objective[Point, Double]
   with VwFunctions
-  with VwCrossValidation {
+  with VwCrossValidation
+  with Logging {
 
   def this(numFolds: Int,
            vwDataset: Iterable[String],
@@ -50,8 +51,8 @@ abstract class AbstractVwCrossValidationObjective(
     val vwTrainParams = getTrainVwParams(vwTrainParamsMap, point)
     val vwTestParams = getTestVwParams(vwTestParamsMap, point)
 
-    //logInfo(s"Vw Training Params: $vwTrainParams")
-    //logInfo(s"Vw Testing Params: $vwTestParams")
+    info(s"Vw Training Params: $vwTrainParams")
+    info(s"Vw Testing Params: $vwTestParams")
 
     val avgLosses = (0 until numFolds).map { fold =>
       // Retrieve the training and test set cache for this fold.
@@ -64,17 +65,17 @@ abstract class AbstractVwCrossValidationObjective(
 
       // Train
       val vwTrainingProcess = VwProcess(s"-f ${modelFile.getAbsolutePath} --cache_file ${vwTrainFile.getAbsolutePath} $vwTrainParams")
-      //logInfo(s"Executing training: ${vwTrainingProcess.toString}")
+      info(s"Executing training: ${vwTrainingProcess.toString}")
       val vwTrainResult = vwTrainingProcess()
-      //logInfo(s"Train stderr ${vwTrainResult.stderr}")
+      info(s"Train stderr ${vwTrainResult.stderr}")
       assert(vwTrainResult.exitCode == 0, s"VW Training exited with non-zero exit code s${vwTrainResult.exitCode}")
 
       // Test
       val vwTestProcess = VwProcess(s"-t -i ${modelFile.getAbsolutePath} --cache_file ${vwTestFile.getAbsolutePath} $vwTestParams")
-      //logInfo(s"Executing testing: ${vwTestProcess.toString}")
+      info(s"Executing testing: ${vwTestProcess.toString}")
       val vwTestResult = vwTestProcess()
       assert(vwTestResult.exitCode == 0, s"VW Testing exited with non-zero exit code s${vwTestResult.exitCode}")
-      //logInfo(s"Test stderr ${vwTestResult.stderr}")
+      info(s"Test stderr ${vwTestResult.stderr}")
       val loss = vwTestResult.loss.getOrElse(throw new RuntimeException("Unable to obtain avg loss from test result"))
 
       // Delete the model.  We don't need these sitting around on the executor's filesystem.
@@ -83,9 +84,9 @@ abstract class AbstractVwCrossValidationObjective(
       loss
     }
 
-    //logInfo(s"Avg losses for all folds: $avgLosses")
+    info(s"Avg losses for all folds: $avgLosses")
     val crossValidatedAvgLoss = avgLosses.sum / numFolds
-    //logInfo(s"Cross validated avg loss: $crossValidatedAvgLoss")
+    info(s"Cross validated avg loss: $crossValidatedAvgLoss")
 
     crossValidatedAvgLoss
   }

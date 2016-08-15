@@ -8,7 +8,10 @@ import scala.util.Random
 trait SamplerFunction[T] extends Serializable
 
 /**
-  * A sampler function dependent on a pseudo random number generator.
+  * A sampler function dependent on a pseudo random number generator.  The generator
+  * is passed in as a parameter, and this is intentional.  It allows the user to
+  * change seeds and switch generators.  This becomes important when sampling on
+  * Spark workers and more control over the rng is necessary.
   *
   * @tparam T
   */
@@ -22,9 +25,9 @@ abstract class Uniform[T](lb: T, ub: T) extends RandomSampler[T]
   * Sample a Double within the bounds lb <= x < ub with uniform random distribution
   *
   * {{{
-  *   val hyperParamSpace = Map(
-  *     ("x1", UniformDouble(0, 1))
-  *   )
+  *   val rng = new Random(seed)
+  *   val sampler = UniformDouble(0, 1))
+  *   val sample = sampler(rng)
   * }}}
   *
   * @param lb lower bound

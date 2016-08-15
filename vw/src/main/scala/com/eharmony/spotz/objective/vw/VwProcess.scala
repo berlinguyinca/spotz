@@ -5,11 +5,13 @@ import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
 
 /**
   * A VW Process run.  The parameters are passed as a string in the exact same
-  * way they are passed as args on the vw command line.
+  * way they are passed as parameters on the vw command line.
+  *
+  * TODO: This doesn't currently support stdin.
   *
   * @param params vw args
   */
-case class VwProcess(params: String) extends CommandLineProcess(s"vw $params") {
+case class VwProcess(params: String) extends CommandLineProcess(s"vw $params", None) {
 
   /**
     * Execute the VW process and return a VWResult object with the VW exit code,
@@ -75,8 +77,8 @@ class VwProcessBuilder {
   def passes(passes: Int) = append(s"--passes $passes")
   def cache(cacheFile: String) = append(s"--cache_file $cacheFile")
   def quiet() = append("--quiet")
-  def saveRegressorModel(path: String) = append(s"-f $path")
-  def inputRegressorModel(path: String) = append(s"-i $path")
+  def finalRegressor(path: String) = append(s"-f $path")
+  def initialRegressor(path: String) = append(s"-i $path")
 
   def build = VwProcess(sb.toString())
   def execute = build()
