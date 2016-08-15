@@ -6,7 +6,6 @@ import com.eharmony.spotz.optimizer.grid.Grid
 import org.apache.spark.SparkContext
 
 import scala.reflect.ClassTag
-import scala.util.Random
 
 /**
   * Use Spark to paralellize the optimizer computation.
@@ -15,28 +14,23 @@ trait SparkFunctions extends BackendFunctions {
   @transient val sc: SparkContext
 
   /**
-    * The strategy for doing this is to generate the points by sampling from the space
-    * for each partition.  The downside to doing this is that the rng within the space
-    * object is identical across all the executors after the space object is serialized
-    * to all the executors.  It causes the unintended side effect of every executor's
-    * space object generating the SAME pseudo random numbers, so we need to figure out
-    * a way to have every executor have its own unique rng object.
+    * This function will sample batchSize trial points starting with the given
+    * trial start index.  Each trial point will be generated from a rng seeded
+    * by (trial number + seed).  This ensures the any randomness is repeatable
+    * for future trial runs of the same seed.  Sampling occurs on the Spark worker
+    * nodes.
     *
-    * This method samples batchSize points.  Each partition of trials has its own
-    * space with unique rng to sample from so that any points generated from one
-    * partition of trials is highly unlikely to be the same set of points generated
-    * from another partition.
-    *
-    * An alternative to doing this is to generate the points on the driver and
-    * have the points be serialized to the executors, but this approach has a lot
-    * of network overhead, though it will fix the rng problem because there's only
-    * a single space from which to sample the points.
-    *
-    * @param batchSize the number of points to sample from the space
+    * @param startIndex the starting trial index
+    * @param batchSize the number of points to sample beginning at the startIndex
     * @param objective the function on which a point is applied
     * @param reducer the reducer function to use on all the various points and losses
     *                generated
-    * @return the best point with the best loss
+    * @param hyperParams defined hyper parameters from which to sample
+    * @param seed the seed
+    * @param sampleFunction sample a point from the defined hyper parameter space
+    * @tparam P point type
+    * @tparam L loss type
+    * @return the best point with the best loss as a tuple
     */
   protected override def bestRandomPointAndLoss[P, L](
       startIndex: Long,
@@ -61,15 +55,36 @@ trait SparkFunctions extends BackendFunctions {
     pointAndLossRDD.reduce(reducer)
   }
 
-  protected override def bestGridPointAndLoss[P, L](startIndex: Long,
-                                                    batchSize: Long,
-                                                    objective: Objective[P, L],
-                                                    space: Grid[P],
-                                                    reducer: ((P, L), (P, L)) => (P, L))
-                                                    (implicit c: ClassTag[P], p: ClassTag[L]): (P, L) = {
+  /**
+    * This function will sample batchSize trial points starting with the given
+    * trial start index.  Each trial point will be obtained by doing an index
+    * lookup inside a <code>Grid</code> object, similarly to how a lookup is
+    * done with an <code>IndexedSeq</code> using the apply method.  The index
+    * is the trial number.  The points are then applied in the objective
+    * function in parallel and a single (point, loss) tuple with
+    *
+    * @param startIndex the starting trial index
+    * @param batchSize the number of points to sample beginning at the startIndex
+    * @param objective the function on which a point is applied
+    * @param grid Grid object from which to obtain trial points
+    * @param reducer reduce function to reduce a (point, loss) tuple
+    * @param p ClassTag for type P
+    * @param l ClassTag for type L
+    * @tparam P point type
+    * @tparam L loss type
+    * @return the best point with the best loss as a tuple
+    */
+  protected override def bestGridPointAndLoss[P, L](
+      startIndex: Long,
+      batchSize: Long,
+      objective: Objective[P, L],
+      grid: Grid[P],
+      reducer: ((P, L), (P, L)) => (P, L))
+      (implicit p: ClassTag[P], l: ClassTag[L]): (P, L) = {
+
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
     val pointAndLossRDD = rdd.map { idx =>
-      val point = space(idx)
+      val point = grid(idx)
       (point, objective(point))
     }
 
