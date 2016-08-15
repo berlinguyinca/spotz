@@ -2,7 +2,7 @@ package com.eharmony.spotz.examples
 
 import com.eharmony.spotz.Preamble.Point
 import org.junit.Assert._
-import org.junit.Test
+import org.junit.{Ignore, Test}
 
 import scala.math.Pi
 
@@ -23,12 +23,14 @@ class BraninTest {
   }
 
   @Test
+  @Ignore
   def testBraninSparkRandomSearch() {
     val result = BraninSparkRandomSearch()
     checkAssertions(result.bestPoint, result.bestLoss)
   }
 
   @Test
+  @Ignore
   def testBraninSparkGridSearch() {
     val result = BraninSparkGridSearch()
     checkAssertions(result.bestPoint, result.bestLoss)
