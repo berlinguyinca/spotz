@@ -96,6 +96,12 @@ trait AbstractOptimizer[P, L, S, R <: OptimizerResult[P, L]] extends Optimizer[P
                         (implicit c: ClassTag[P], p: ClassTag[L]): R
 }
 
+/**
+  * Tracks state of an optimizer.  This is intended to be implemented by subclasses.
+  *
+  * @tparam P
+  * @tparam L
+  */
 trait OptimizerState[P, L] {
   val bestPointSoFar: P
   val bestLossSoFar: L

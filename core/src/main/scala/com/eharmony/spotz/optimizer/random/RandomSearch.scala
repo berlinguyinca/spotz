@@ -20,6 +20,16 @@ import scala.util.Random
   * These points are then evaluated with the supplied objective function.  A StopStrategy object must be
   * supplied by the caller to specify search algorithm stopping criteria.
   *
+  * {{{
+  *   import com.eharmony.spotz.Preamble._
+  *   import com.eharmony.spotz.optimizer.NormalDistribution
+  *
+  *   val rs = new RandomSearch[Point, Double](sc, StopStrategy.stopAfterMaxTrials(1000000L))
+  *   val result = rs.minimize(new MyObjective(), Map(
+  *     ("x1", NormalDistribution(0, 0.1))
+  *   ))
+  * }}}
+  *
   * @author vsuthichai
   */
 abstract class RandomSearch[P, L](
@@ -32,11 +42,11 @@ abstract class RandomSearch[P, L](
   with Logging {
 
   /**
-    * This sample method is used on worker nodes.
+    * Sample from the user defined hyper parameter constraints.
     *
-    * @param params
-    * @param theSeed
-    * @return
+    * @param params the user defined hyper parameters
+    * @param theSeed random number generator seed
+    * @return the point P of the sampled hyper parameters
     */
   private def sample(params: Map[String, RandomSampler[_]], theSeed: Long): P = {
     val rng = new Random(theSeed)
@@ -45,10 +55,10 @@ abstract class RandomSearch[P, L](
     factory(params.map { case (label, sampler) => (label, sampler(rng)) } )
   }
 
-  override def optimize(objective: Objective[P, L],
-                        paramSpace: Map[String, RandomSampler[_]],
-                        reducer: Reducer[(P, L)])
-                       (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
+  override protected def optimize(objective: Objective[P, L],
+                                  paramSpace: Map[String, RandomSampler[_]],
+                                  reducer: Reducer[(P, L)])
+                                 (implicit c: ClassTag[P], p: ClassTag[L]): RandomSearchResult[P, L] = {
     val startTime = DateTime.now()
     val firstPoint = sample(paramSpace, seed)
     val firstLoss = objective(firstPoint)
@@ -69,11 +79,11 @@ abstract class RandomSearch[P, L](
   /**
     * A tail recursive method that performs the random search.  We keep track of the best point and the best loss
     * represented by P and L.  This function delegates to the BackendFunctions trait to parallelize the objective
-    * function evaluations.  The method completes after a caller specified number of trials and/or elapsed time
-    * duration.
+    * function evaluations.  The method completes when the stop strategy specified by the user evaluted to true.
     *
     * @param objective the objective function
     * @param reducer the function used to reduce points
+    * @param rsc the RandomSearchContext object which maintains the updated state of the search
     * @param c ClassTag for P
     * @param p ClassTag for C
     * @return a <code>RandomSearchResult</code>
@@ -108,14 +118,13 @@ abstract class RandomSearch[P, L](
           bestRandomPointAndLoss(rsc.trialsSoFar, batchSize, objective, reducer, paramSpace, seed, sample))
 
         val currentTime = DateTime.now()
-        val elapsedTime = new Duration(rsc.startTime, currentTime)
 
         val randomSearchContext = RandomSearchContext(
           bestPointSoFar = bestPoint,
           bestLossSoFar = bestLoss,
           startTime = rsc.startTime,
           currentTime = currentTime,
-          elapsedTime = elapsedTime,
+          elapsedTime = new Duration(rsc.startTime, currentTime),
           trialsSoFar = rsc.trialsSoFar + batchSize,
           optimizerFinished = false)
 
@@ -125,6 +134,21 @@ abstract class RandomSearch[P, L](
   }
 }
 
+/**
+  * Context object used to maintain and pass state within RandomSearch.  This is used in lieu of
+  * using mutable variables.  It is also inspected by stop strategies to determine when to end
+  * a search.
+  *
+  * @param bestPointSoFar the best point so far in the search
+  * @param bestLossSoFar the best loss so far in the search
+  * @param startTime the start time the search begin
+  * @param currentTime the current time
+  * @param elapsedTime the elapsed time duration, ie. the current time minus the start time
+  * @param trialsSoFar the number of trials executed so far
+  * @param optimizerFinished boolean value indicating when a search has stopped
+  * @tparam P point type
+  * @tparam L loss type
+  */
 case class RandomSearchContext[P, L](
     bestPointSoFar: P,
     bestLossSoFar: L,
