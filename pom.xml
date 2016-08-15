@@ -310,6 +310,7 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <!-- Unit tests pass with this heap configuration in Travis CI -->
                         <argLine>-Xms2g -Xmx2g</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     </configuration>

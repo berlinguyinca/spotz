@@ -57,8 +57,8 @@ trait VwFunctions {
     vwParamMap.foldLeft(new StringBuilder) { case (sb, (vwArg, vwValue)) =>
       val dashes = if (vwArg.length == 1) "-" else "--"
       val vwParam = vwValue match {
-        case value: String => s"$dashes$vwArg $vwValue "
         case value: Iterable[_] => value.map(x => s"$dashes$vwArg ${x.toString}").mkString(" ")
+        case _ => s"$dashes$vwArg $vwValue "
       }
       sb ++= vwParam
     }.toString()

@@ -45,18 +45,30 @@ class Grid[P](
 
   assert(gridParams.nonEmpty, "No grid parameters have been specified")
 
-  /** Expand the each grid row.  The memory required is linear in the sum of lengths of all the iterables */
-  /** pre-compute the divisible factor and store along with the length inside GridRow                     */
-  private val gridRows = gridParams.map { case (label, it) => (label, it.toSeq) }
-    .foldRight(ArrayBuffer[GridRow]()) { case ((label, it), b) =>
-      if (b.isEmpty) GridRow(label, it, 1L, it.length.toLong) +=: b
-      else GridRow(label, it, b.head.length * b.head.divisor, it.length.toLong) +=: b
-    }.toIndexedSeq
+  private lazy val gridRows = computeGrid()
+  lazy val length = computeLength()
+  lazy val size = length
 
-  val length = gridRows.foldLeft(1L)((product, gridRow) => product * gridRow.length)
-  val size = length
+  /**
+    * Expand the each grid row.  The memory required is linear in the sum of lengths of all
+    * the iterables.  Pre-compute the divisible factor and store along with the length inside
+    * GridRow.
+    *
+    * @return
+    */
+  private def computeGrid(): IndexedSeq[GridRow] = {
+    gridParams.map { case (label, it) => (label, it.toSeq) }
+      .foldRight(ArrayBuffer[GridRow]()) { case ((label, it), b) =>
+        if (b.isEmpty) GridRow(label, it, 1L, it.length.toLong) +=: b
+        else GridRow(label, it, b.head.length * b.head.divisor, it.length.toLong) +=: b
+      }.toIndexedSeq
+  }
 
-  info(s"$size hyper parameter tuples found in GridSpace")
+  private def computeLength(): Long = {
+    val len = gridRows.foldLeft(1L)((product, gridRow) => product * gridRow.length)
+    info(s"$len hyper parameter tuples found in GridSpace")
+    len
+  }
 
   /**
     * Retrieve an indexed element from this grid.

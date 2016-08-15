@@ -3,6 +3,7 @@ package com.eharmony.spotz.examples.vw
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.objective.vw.SparkVwHoldoutObjective
 import com.eharmony.spotz.optimizer.grid.{Grid, SparkGridSearch}
+import com.eharmony.spotz.optimizer.random.SparkRandomSearch
 import com.eharmony.spotz.optimizer.{StopStrategy, UniformDouble}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -10,7 +11,7 @@ import org.apache.spark.{SparkConf, SparkContext}
   * @author vsuthichai
   */
 object SparkVwHoldout {
-/*
+  /*
   def randomSearch(args: Array[String]) = {
     val trials = args(1).toInt
     val vwTrainPath = args(2)
@@ -28,9 +29,9 @@ object SparkVwHoldout {
       vwTestParamsString = Option("--loss_function logistic")
     )
 
-    val space = new RandomSpace[Point](Map(
-      ("l", new UniformDouble(0, 1))
-    ))
+    val space = Map(
+      ("l", UniformDouble(0, 1))
+    )
 
     val result = optimizer.minimize(objective, space)
     sc.stop()
@@ -44,7 +45,6 @@ object SparkVwHoldout {
 
     val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
 
-    val optimizer = new SparkGridSearch[Point, Double](sc)
     val objective = new SparkVwHoldoutObjective(
       sc = sc,
       vwTrainSetPath = vwTrainPath,
@@ -53,12 +53,12 @@ object SparkVwHoldout {
       vwTestParamsString = Option("--loss_function logistic")
     )
 
-    val space = new GridSpace[Point](Map(
+    val optimizer = new SparkGridSearch[Point, Double](sc)
+
+    val result = optimizer.minimize(objective, Map(
       ("l", Seq(1,2,3))
     ))
 
-    // Minimize
-    val result = optimizer.minimize(objective, space)
     sc.stop()
     result
   }

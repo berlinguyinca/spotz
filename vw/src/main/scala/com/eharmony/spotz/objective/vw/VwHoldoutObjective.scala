@@ -52,7 +52,7 @@ abstract class AbstractVwHoldoutObjective(
     val vwTrainingProcess = VwProcess(s"-f ${modelFile.getAbsolutePath} --cache_file ${vwTrainFile.getAbsolutePath} $vwTrainParams")
     info(s"Executing training: ${vwTrainingProcess.toString}")
     val vwTrainResult = vwTrainingProcess()
-    info(s"Train stderr ${vwTrainResult.stderr}")
+    info(s"Train stderr\n${vwTrainResult.stderr}")
     assert(vwTrainResult.exitCode == 0, s"VW Training exited with non-zero exit code s${vwTrainResult.exitCode}")
 
     // Test
@@ -62,7 +62,7 @@ abstract class AbstractVwHoldoutObjective(
     info(s"Executing testing: ${vwTestProcess.toString}")
     val vwTestResult = vwTestProcess()
     assert(vwTestResult.exitCode == 0, s"VW Testing exited with non-zero exit code s${vwTestResult.exitCode}")
-    info(s"Test stderr ${vwTestResult.stderr}")
+    info(s"Test stderr\n${vwTestResult.stderr}")
     val loss = vwTestResult.loss.getOrElse(throw new RuntimeException("Unable to obtain avg loss from test result"))
 
     // Delete the model.  We don't need these sitting around on the executor's filesystem.
