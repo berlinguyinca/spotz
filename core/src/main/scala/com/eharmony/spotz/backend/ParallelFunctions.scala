@@ -30,13 +30,15 @@ trait ParallelFunctions extends BackendFunctions {
     * @tparam L loss type
     * @return the best point with the best loss as a tuple
     */
-  protected override def bestRandomPointAndLoss[P, L](startIndex: Long,
-                                                      batchSize: Long,
-                                                      objective: Objective[P, L],
-                                                      reducer: ((P, L), (P, L)) => (P, L),
-                                                      hyperParams: Map[String, RandomSampler[_]],
-                                                      seed: Long = 0,
-                                                      sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
+  protected override def bestRandomPointAndLoss[P, L](
+      startIndex: Long,
+      batchSize: Long,
+      objective: Objective[P, L],
+      reducer: ((P, L), (P, L)) => (P, L),
+      hyperParams: Map[String, RandomSampler[_]],
+      seed: Long = 0,
+      sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
+
     val pointsAndLosses = (startIndex until (startIndex + batchSize)).par.map { trial =>
       val point = sampleFunction(hyperParams, seed + trial)
       (point, objective(point))
@@ -63,12 +65,14 @@ trait ParallelFunctions extends BackendFunctions {
     * @tparam L loss type
     * @return the best point with the best loss as a tuple
     */
-  protected override def bestGridPointAndLoss[P, L](startIndex: Long,
-                                                    batchSize: Long,
-                                                    objective: Objective[P, L],
-                                                    grid: Grid[P],
-                                                    reducer: ((P, L), (P, L)) => (P, L))
-                                                    (implicit p: ClassTag[P], l: ClassTag[L]): (P, L) = {
+  protected override def bestGridPointAndLoss[P, L](
+      startIndex: Long,
+      batchSize: Long,
+      objective: Objective[P, L],
+      grid: Grid[P],
+      reducer: ((P, L), (P, L)) => (P, L))
+      (implicit p: ClassTag[P], l: ClassTag[L]): (P, L) = {
+
     val pointsAndLosses = (startIndex until (startIndex + batchSize)).par.map { trial =>
       val point = grid(trial)
       (point, objective(point))

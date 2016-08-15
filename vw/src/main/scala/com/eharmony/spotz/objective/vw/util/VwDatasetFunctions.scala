@@ -21,7 +21,6 @@ trait VwDatasetFunctions extends FileFunctions {
 
   def saveAsCache(vwDataset: Iterator[String], vwCacheFilename: String): String = {
     // Write VW dataset to a temporary file
-    // TODO: Stream this to VW later.
     val vwDatasetFile = FileUtil.tempFile("dataset.vw")
     val vwDatasetWriter = new PrintWriter(vwDatasetFile)
     vwDataset.foreach(line => vwDatasetWriter.println(line))

@@ -311,6 +311,7 @@
                     </executions>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <forkMode>always</forkMode>
                     </configuration>
                 </plugin>
 
