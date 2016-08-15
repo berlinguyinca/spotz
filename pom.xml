@@ -310,6 +310,7 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <argLine>-Xmx2g</argLine>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                         <forkMode>pertest</forkMode>
                     </configuration>

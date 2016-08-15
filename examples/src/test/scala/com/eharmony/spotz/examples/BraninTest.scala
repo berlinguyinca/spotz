@@ -23,14 +23,12 @@ class BraninTest {
   }
 
   @Test
-  @Ignore
   def testBraninSparkRandomSearch() {
     val result = BraninSparkRandomSearch()
     checkAssertions(result.bestPoint, result.bestLoss)
   }
 
   @Test
-  @Ignore
   def testBraninSparkGridSearch() {
     val result = BraninSparkGridSearch()
     checkAssertions(result.bestPoint, result.bestLoss)
