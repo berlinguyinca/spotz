@@ -13,7 +13,7 @@ import scala.io.Source
   */
 abstract class AbstractVwCrossValidationObjective(
     val numFolds: Int,
-    val vwDataset: Iterator[String],
+    @transient val vwDataset: Iterator[String],
     vwTrainParamsString: Option[String],
     vwTestParamsString: Option[String])
   extends Objective[Point, Double]

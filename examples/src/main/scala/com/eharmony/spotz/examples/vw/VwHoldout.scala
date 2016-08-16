@@ -1,28 +1,37 @@
 package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.examples.{ExampleRunner, ParExampleRunner, SparkExampleRunner}
-import com.eharmony.spotz.objective.vw.VwHoldoutObjective
+import com.eharmony.spotz.objective.vw.{AbstractVwHoldoutObjective, SparkVwHoldoutObjective, VwHoldoutObjective}
 import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
+import org.apache.spark.SparkContext
 import org.rogach.scallop.ScallopConf
 
 /**
   * @author vsuthichai
   */
-class VwHoldoutConfiguration(args: Array[String]) extends ScallopConf(args) {
-  val trainPath = opt[String](name = "trainPath", descr = "Absolute path to VW training dataset", required = true)
-  val testPath = opt[String](name = "testPath", descr = "Absolute path to VW testing dataset", required = true)
-  val trainParams = opt[String](name = "trainParams", descr = "VW training parameters", required = true)
-  val testParams = opt[String](name = "testParams", descr = "VW testing parameters", required = false)
-  val numTrials = opt[Long](name = "numTrials", descr = "Number of trials", required = true)
-  val numSeconds = opt[Int](name = "duration", descr = "Number of seconds", required = true)
-  val numBatchTrials = opt[Int](name = "numBatchTrials", descr = "Number of batch trials", short = 'b', default = Option(10), required = false)
+trait AbstractVwHoldout extends ExampleRunner {
+  def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective
 }
 
-trait VwHoldout {
+trait SparkVwHoldout extends AbstractVwHoldout {
+  val sc: SparkContext
 
+  override def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective = {
+    new SparkVwHoldoutObjective(
+      sc = sc,
+      vwTrainSetPath = conf.trainPath(),
+      vwTrainParamsString = conf.trainParams.toOption,
+      vwTestSetPath = conf.testPath(),
+      vwTestParamsString = conf.testParams.toOption
+    )
+  }
 }
 
-trait VwHoldoutRandomSearch extends VwHoldout with ExampleRunner {
+trait VwHoldout extends AbstractVwHoldout {
+  override def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective = ???
+}
+
+trait VwHoldoutRandomSearch extends VwHoldout {
   val space = Map(
     ("l", UniformDouble(0, 1))
   )
@@ -31,12 +40,7 @@ trait VwHoldoutRandomSearch extends VwHoldout with ExampleRunner {
     val conf = new VwHoldoutConfiguration(args)
     conf.verify()
 
-    val objective = new VwHoldoutObjective(
-      vwTrainSetPath = conf.trainPath(),
-      vwTrainParamsString = conf.trainParams.toOption,
-      vwTestSetPath = conf.testPath(),
-      vwTestParamsString = conf.testParams.toOption
-    )
+    val objective = getObjective(conf)
 
     val stopStrategy = StopStrategy.stopAfterMaxTrials(conf.numTrials())
 
@@ -44,7 +48,7 @@ trait VwHoldoutRandomSearch extends VwHoldout with ExampleRunner {
     println(result)
   }
 
-  def apply(objective: VwHoldoutObjective,
+  def apply(objective: AbstractVwHoldoutObjective,
             space: Map[String, RandomSampler[_]],
             stopStrategy: StopStrategy,
             numBatchTrials: Int) = {
@@ -52,35 +56,30 @@ trait VwHoldoutRandomSearch extends VwHoldout with ExampleRunner {
   }
 }
 
-trait VwHoldoutGridSearch extends VwHoldout with ExampleRunner {
+trait VwHoldoutGridSearch extends VwHoldout {
   val space = Map(
-    ("l",  Range.Double(0, 1, 0.05)),
-    ("l2", Range.Double(0, 1, 0.05))
+    ("l",  Range.Double(0, 1, 0.04)),
+    ("l2", Range.Double(0, 1, 0.04))
   )
 
   def main(args: Array[String]) {
     val conf = new VwHoldoutConfiguration(args)
     conf.verify()
 
-    val objective = new VwHoldoutObjective(
-      vwTrainSetPath = conf.trainPath(),
-      vwTrainParamsString = conf.trainParams.toOption,
-      vwTestSetPath = conf.testPath(),
-      vwTestParamsString = conf.testParams.toOption
-    )
+    val objective = getObjective(conf)
 
     val result = apply(objective, space, conf.numBatchTrials())
     println(result)
   }
 
-  def apply(objective: VwHoldoutObjective,
+  def apply(objective: AbstractVwHoldoutObjective,
             space: Map[String, Iterable[AnyVal]],
             numBatchTrials: Int) = {
     gridSearch(objective, space, numBatchTrials)
   }
 }
 
-object VwHoldoutSparkRandomSearch extends VwHoldoutRandomSearch with SparkExampleRunner
-object VwHoldoutParRandomSearch extends VwHoldoutRandomSearch with ParExampleRunner
-object VwHoldoutSparkGridSearch extends VwHoldoutGridSearch with SparkExampleRunner
-object VwHoldoutParGridSearch extends VwHoldoutGridSearch with ParExampleRunner
+object VwHoldoutSparkRandomSearch extends SparkVwHoldout with VwHoldoutRandomSearch with SparkExampleRunner
+object VwHoldoutParRandomSearch extends VwHoldout with VwHoldoutRandomSearch with ParExampleRunner
+object VwHoldoutSparkGridSearch extends SparkVwHoldout with VwHoldoutGridSearch with SparkExampleRunner
+object VwHoldoutParGridSearch extends VwHoldout with VwHoldoutGridSearch with ParExampleRunner

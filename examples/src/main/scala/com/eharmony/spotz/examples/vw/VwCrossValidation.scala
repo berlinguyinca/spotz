@@ -1,115 +1,99 @@
 package com.eharmony.spotz.examples.vw
 
-import com.eharmony.spotz.Preamble
-import Preamble._
-import com.eharmony.spotz.examples.{ExampleRunner, GridSearchRunner}
-import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.objective.vw._
-import com.eharmony.spotz.optimizer.grid.{GridSearchResult, Grid, ParGridSearch}
+import com.eharmony.spotz.examples._
+import com.eharmony.spotz.objective.vw.{AbstractVwCrossValidationObjective, SparkVwCrossValidationObjective, VwCrossValidationObjective}
 import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
+import org.apache.spark.SparkContext
 
 /**
   * @author vsuthichai
   */
-/*
-object VwCrossValidation {
-  def randomSearch(args: Array[String]) = {
-    val trials = args(1).toInt
-    val folds = args(2).toInt
-    val vwDataset = args(3)
+trait AbstractVwCrossValidation extends ExampleRunner {
+  def getObjective(conf: VwCrossValidationConfiguration): AbstractVwCrossValidationObjective
+}
 
-    import org.apache.spark.{SparkConf, SparkContext}
-
-    val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
-    val stopStrategy = StopStrategy.stopAfterMaxTrials(trials)
-    val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
-
-    val objective = new SparkVwCrossValidationObjective(
-      sc = sc,
-      numFolds = folds,
-      vwDatasetPath = vwDataset,
-      vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
-      vwTestParamsString = Option("--loss_function logistic")
+trait VwCrossValidation extends AbstractVwCrossValidation {
+  override def getObjective(conf: VwCrossValidationConfiguration): AbstractVwCrossValidationObjective = {
+    new VwCrossValidationObjective(
+      numFolds = conf.numFolds(),
+      vwDatasetPath = conf.datasetPath(),
+      vwTrainParamsString = conf.trainParams.toOption,
+      vwTestParamsString = conf.testParams.toOption
     )
-
-    val space = Map(
-      ("l",  UniformDouble(0, 1)),
-      ("l2", UniformDouble(0, 0.2))
-    )
-
-    val result = optimizer.minimize(objective, space)
-    sc.stop()
-    result
   }
+}
 
-  def gridSearch(args: Array[String]) = {
-    val trials = args(1).toInt
-    val folds = args(2).toInt
-    val vwDataset = args(3)
+trait SparkVwCrossValidation extends VwCrossValidation {
+  val sc: SparkContext
 
-    import org.apache.spark.{SparkConf, SparkContext}
-
-    val sc = new SparkContext(new SparkConf().setAppName("VW Optimization Example"))
-
-    val optimizer = new GridSearch[Point, Double]() with SparkFunctions {
-      @transient val sparkContext = sc
-    }
-
-    val optimizer = new ParGridSearch[Point, Double]()
-
-    val objective = new VwCrossValidationObjective(
-      numFolds = folds,
-      vwDatasetPath = vwDataset,
-      vwTrainParamsString = Option("--passes 10 --loss_function logistic"),
-      vwTestParamsString = Option("--loss_function logistic"))
-
-    val space = Map(
-      ("l", 1 to 3),
-      ("l1", Seq(0.001, 0.1))
+  override def getObjective(conf: VwCrossValidationConfiguration): AbstractVwCrossValidationObjective = {
+    new SparkVwCrossValidationObjective(
+      sc = sc,
+      numFolds = conf.numFolds(),
+      vwDatasetPath = conf.datasetPath(),
+      vwTrainParamsString = conf.trainParams.toOption,
+      vwTestParamsString = conf.testParams.toOption
     )
+  }
+}
 
-    // Minimize
-    val result = optimizer.minimize(objective, space)
-    //sc.stop()
-    result
+trait VwCrossValidationRandomSearch extends VwCrossValidation {
+  val space = Map(
+    ("l",  UniformDouble(0, 1)),
+    ("l2", UniformDouble(0, 1))
+  )
+
+  def getConf(args: Array[String]) = {
+    val conf = new VwCrossValidationConfiguration(args) with RandomSearchConfiguration
+    conf.verify()
+    conf
   }
 
   def main(args: Array[String]) {
-    val result = args(0).toLowerCase match {
-      case "random" => randomSearch(args)
-      case "grid" => gridSearch(args)
-    }
+    val conf = new VwCrossValidationConfiguration(args)
+    conf.verify()
+
+    val stopStrategy = StopStrategy.stopAfterMaxTrials(conf.numTrials())
+    val objective = getObjective(conf)
+    val result = apply(objective, space, stopStrategy, conf.numBatchTrials())
     println(result)
   }
-}
-*/
-/*
-trait VwCrossValidation {
 
+  def apply(objective: AbstractVwCrossValidationObjective,
+            space: Map[String, RandomSampler[_]],
+            stopStrategy: StopStrategy,
+            numBatchTrials: Int) = {
+    randomSearch(objective, space, stopStrategy, numBatchTrials)
+  }
 }
 
-trait VwCrossValidationGridSearch extends ExampleRunner {
-  val hyperParmeters = Map(
-    ("l", Range.Double(0.0, 1.0, 0.1))
+trait VwCrossValidationGridSearch extends VwCrossValidation {
+  val space = Map(
+    ("l",  Range.Double(0, 1, 0.04)),
+    ("l2", Range.Double(0, 1, 0.04))
   )
 
-  val objective =
+  def getConf(args: Array[String]) = {
+    val conf = new VwCrossValidationConfiguration(args) with GridSearchConfiguration
+    conf.verify()
+    conf
+  }
+
+  def main(args: Array[String]) {
+    val conf = getConf(args)
+    val objective = getObjective(conf)
+    val result = apply(objective, space, conf.numBatchTrials())
+    println(result)
+  }
+
+  def apply(objective: AbstractVwCrossValidationObjective,
+            space: Map[String, Iterable[AnyVal]],
+            numBatchTrials: Int) = {
+    gridSearch(objective, space, numBatchTrials)
+  }
 }
 
-trait VwCrossValidationRandomSearch extends ExampleRunner {
-
-}
-
-object VwCrossValidationSparkGridSearch extends VwCrossValidationGridSearch with GridSearchRunner {
-  override val hyperParameters: Map[String, Iterable[AnyVal]] = _
-  override val objective: Objective[Point, Double] = _
-  override val numBatchTrials: Int = _
-
-  override def randomSearch(objective: Objective[Point, Double], params: Map[String, RandomSampler[_]], stop: StopStrategy, numBatchTrials: Int): RandomSearchResult[Point, Double] = ???
-
-  override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int): GridSearchResult[Point, Double] = ???
-}
-object VwCrossValidationParGridSearch
-object VwCrossValidationSparkRandomSearch
-object VwCrossValidationParRandomSearch
-*/
+object VwCrossValidationSparkGridSearch extends SparkVwCrossValidation with VwCrossValidationGridSearch with SparkExampleRunner
+object VwCrossValidationSparkRandomSearch extends SparkVwCrossValidation with VwCrossValidationRandomSearch with SparkExampleRunner
+object VwCrossValidationParRandomSearch extends VwCrossValidation with VwCrossValidationRandomSearch with ParExampleRunner
+object VwCrossValidationParGridSearch extends VwCrossValidation with VwCrossValidationGridSearch with ParExampleRunner

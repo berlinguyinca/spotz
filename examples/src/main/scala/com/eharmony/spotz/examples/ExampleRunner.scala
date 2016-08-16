@@ -28,8 +28,9 @@ trait ParExampleRunner extends ExampleRunner {
 }
 
 trait SparkExampleRunner extends ExampleRunner {
+  val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("Spark Example Runner"))
+
   override def randomSearch(objective: Objective[Point, Double], params: Map[String, RandomSampler[_]], stop: StopStrategy, numBatchTrials: Int) = {
-    val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("Spark Random Search"))
     val optimizer = new SparkRandomSearch[Point, Double](sc, stop, numBatchTrials)
     val result = optimizer.minimize(objective, params)
     sc.stop()
@@ -37,7 +38,6 @@ trait SparkExampleRunner extends ExampleRunner {
   }
 
   override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int) = {
-    val sc = new SparkContext(new SparkConf().setMaster("local[*]").setAppName("Spark Grid Search"))
     val optimizer = new SparkGridSearch[Point, Double](sc, numBatchTrials)
     val result = optimizer.minimize(objective, params)
     sc.stop()
