@@ -1,10 +1,9 @@
 package com.eharmony.spotz.examples.vw
 
-import com.eharmony.spotz.examples.{ExampleRunner, ParExampleRunner, SparkExampleRunner}
+import com.eharmony.spotz.examples._
 import com.eharmony.spotz.objective.vw.{AbstractVwHoldoutObjective, SparkVwHoldoutObjective, VwHoldoutObjective}
 import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
 import org.apache.spark.SparkContext
-import org.rogach.scallop.ScallopConf
 
 /**
   * @author vsuthichai
@@ -28,7 +27,14 @@ trait SparkVwHoldout extends AbstractVwHoldout {
 }
 
 trait VwHoldout extends AbstractVwHoldout {
-  override def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective = ???
+  override def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective = {
+    new VwHoldoutObjective(
+      vwTrainSetPath = conf.trainPath(),
+      vwTrainParamsString = conf.trainParams.toOption,
+      vwTestSetPath = conf.testPath(),
+      vwTestParamsString = conf.testParams.toOption
+    )
+  }
 }
 
 trait VwHoldoutRandomSearch extends VwHoldout {
@@ -37,7 +43,7 @@ trait VwHoldoutRandomSearch extends VwHoldout {
   )
 
   def main(args: Array[String]) {
-    val conf = new VwHoldoutConfiguration(args)
+    val conf = new VwHoldoutConfiguration(args) with RandomSearchConfiguration
     conf.verify()
 
     val objective = getObjective(conf)
@@ -63,7 +69,7 @@ trait VwHoldoutGridSearch extends VwHoldout {
   )
 
   def main(args: Array[String]) {
-    val conf = new VwHoldoutConfiguration(args)
+    val conf = new VwHoldoutConfiguration(args) with GridSearchConfiguration
     conf.verify()
 
     val objective = getObjective(conf)

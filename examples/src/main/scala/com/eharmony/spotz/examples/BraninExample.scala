@@ -14,7 +14,7 @@ import scala.math._
   * f(x) = a(x2 - b(x1)^2 + cx1 - r)^2 + s(1 - t)cos(x1) + s
   *
   * Global Minimum:
-  * f(x*) = 0.397887 at x* = (-Pi, 12.275), (Pi, 2.275), (9.42478, 2.475)*
+  * f(x*) = 0.397887 at x* = (-Pi, 12.275), (Pi, 2.275), (9.42478, 2.475)
   */
 class BraninObjective extends Objective[Point, Double] {
   val a = 1
