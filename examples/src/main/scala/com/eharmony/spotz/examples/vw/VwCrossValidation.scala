@@ -2,7 +2,8 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.examples._
 import com.eharmony.spotz.objective.vw.{AbstractVwCrossValidationObjective, SparkVwCrossValidationObjective, VwCrossValidationObjective}
-import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
+import com.eharmony.spotz.optimizer.hyperparam.{RandomSampler, UniformDouble}
+import com.eharmony.spotz.optimizer.StopStrategy
 import org.apache.spark.SparkContext
 
 /**

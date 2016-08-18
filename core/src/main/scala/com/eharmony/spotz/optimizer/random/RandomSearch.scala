@@ -3,6 +3,7 @@ package com.eharmony.spotz.optimizer.random
 import com.eharmony.spotz.backend.{BackendFunctions, ParallelFunctions, SparkFunctions}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer._
+import com.eharmony.spotz.optimizer.hyperparam.RandomSampler
 import com.eharmony.spotz.util.{DurationUtils, Logging}
 import org.apache.spark.SparkContext
 import org.joda.time.{DateTime, Duration}

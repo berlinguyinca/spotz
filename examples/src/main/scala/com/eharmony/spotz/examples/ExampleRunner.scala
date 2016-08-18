@@ -4,7 +4,8 @@ import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.grid.{GridSearchResult, ParGridSearch, SparkGridSearch}
 import com.eharmony.spotz.optimizer.random.{ParRandomSearch, RandomSearchResult, SparkRandomSearch}
-import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy}
+import com.eharmony.spotz.optimizer.StopStrategy
+import com.eharmony.spotz.optimizer.hyperparam.RandomSampler
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**

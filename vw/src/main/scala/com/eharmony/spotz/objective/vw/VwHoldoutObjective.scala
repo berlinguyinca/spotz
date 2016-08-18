@@ -3,10 +3,8 @@ package com.eharmony.spotz.objective.vw
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw.util.{FSVwDatasetFunctions, SparkVwDatasetFunctions, VwDatasetFunctions}
-import com.eharmony.spotz.util.{FileUtil, Logging}
+import com.eharmony.spotz.util.{FileUtil, Logging, SparkFileUtil}
 import org.apache.spark.SparkContext
-
-import scala.io.Source
 
 /**
   * @author vsuthichai
@@ -32,8 +30,7 @@ abstract class AbstractVwHoldoutObjective(
            vwTrainParamsString: Option[String],
            vwTestSetPath: String,
            vwTestParamsString: Option[String]) = {
-    this(Source.fromInputStream(FileUtil.loadFile(vwTrainSetPath)).getLines(), vwTrainParamsString,
-      Source.fromInputStream(FileUtil.loadFile(vwTestSetPath)).getLines(), vwTestParamsString)
+    this(FileUtil.loadFile(vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
   }
 
   val vwTrainParamMap = parseVwArgs(vwTrainParamsString)
@@ -95,8 +92,7 @@ class SparkVwHoldoutObjective(
            vwTrainParamsString: Option[String],
            vwTestSetPath: String,
            vwTestParamsString: Option[String]) = {
-    this(sc, Source.fromInputStream(FileUtil.loadFile(vwTrainSetPath)).getLines(), vwTrainParamsString,
-         Source.fromInputStream(FileUtil.loadFile(vwTestSetPath)).getLines(), vwTestParamsString)
+    this(sc, SparkFileUtil.loadFile(sc, vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
   }
 }
 
@@ -119,7 +115,6 @@ class VwHoldoutObjective(
            vwTrainParamsString: Option[String],
            vwTestSetPath: String,
            vwTestParamsString: Option[String]) = {
-    this(Source.fromInputStream(FileUtil.loadFile(vwTrainSetPath)).getLines(), vwTrainParamsString,
-         Source.fromInputStream(FileUtil.loadFile(vwTestSetPath)).getLines(), vwTestParamsString)
+    this(FileUtil.loadFile(vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
   }
 }

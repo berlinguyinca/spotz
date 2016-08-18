@@ -2,7 +2,8 @@ package com.eharmony.spotz.examples.vw
 
 import com.eharmony.spotz.examples._
 import com.eharmony.spotz.objective.vw.{AbstractVwHoldoutObjective, SparkVwHoldoutObjective, VwHoldoutObjective}
-import com.eharmony.spotz.optimizer.{RandomSampler, StopStrategy, UniformDouble}
+import com.eharmony.spotz.optimizer._
+import com.eharmony.spotz.optimizer.hyperparam.{Combinations, RandomSampler, UniformDouble}
 import org.apache.spark.SparkContext
 
 /**
@@ -39,7 +40,8 @@ trait VwHoldout extends AbstractVwHoldout {
 
 trait VwHoldoutRandomSearch extends VwHoldout {
   val space = Map(
-    ("l", UniformDouble(0, 1))
+    ("l", UniformDouble(0, 1)),
+    ("q", Combinations(List("a", "b", "c", "d"), k = 2, x = 2))
   )
 
   def main(args: Array[String]) {

@@ -1,5 +1,6 @@
 package com.eharmony.spotz.optimizer
 
+import com.eharmony.spotz.optimizer.hyperparam.UniformDouble
 import org.junit.Assert._
 import org.junit.Test
 

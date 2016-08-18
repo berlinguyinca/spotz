@@ -4,8 +4,6 @@ import java.io.{File, PrintWriter}
 
 import org.apache.spark.{SparkContext, SparkFiles}
 
-import scala.io.Source
-
 /**
   * Provide capability to save and retrieve files from inside the objective
   * functions.  Users are free to interact with the underlying file system freely as they desire,
@@ -16,7 +14,7 @@ import scala.io.Source
   * <code>get</method> inside the <code>apply</code> method.
   */
 trait FileFunctions {
-  def save(inputPath: String): String = save(Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines())
+  def save(inputPath: String): String = save(FileUtil.loadFile(inputPath))
 
   def save(inputIterable: Iterable[String]): String = save(inputIterable.toIterator)
 

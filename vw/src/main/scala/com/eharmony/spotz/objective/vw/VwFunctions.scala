@@ -18,18 +18,25 @@ trait VwFunctions {
     *
     * @param vwParamMap a Map[String, String] where the key is a VW argument and the value
     *                   is the argument value.
-    * @param point a point object representing the hyperparameter values
-    * @return a new Map[String, String] which is the result of merging the vwParamMap and the point.
+    * @param point a point object representing the hyper parameter values
+    * @return a new Map[String, String] which is the result of merging the vwParamMap and
+    *         the point.
     */
   def mergeVwParams(vwParamMap: Map[String, _], point: Point): Map[String, _] = {
-    val vwParamsMutableMap = mutable.Map[String, Any]()
-
-    vwParamMap.foldLeft(vwParamsMutableMap) { case (mutableMap, (k, v)) =>
-      mutableMap += ((k, v))
-    }
+    val vwParamsMutableMap = mutable.Map[String, Any](vwParamMap.toSeq: _*)
 
     point.getHyperParameterLabels.foldLeft(vwParamsMutableMap) { (mutableMap, vwHyperParam) =>
-      mutableMap += ((vwHyperParam, point.get(vwHyperParam)))
+      if (mutableMap.contains(vwHyperParam)) {
+        val listValues = mutableMap(vwHyperParam) match {
+          case it: Iterable[_] => it.toList ++ point.get(vwHyperParam)
+          case value => List(value, point.get(vwHyperParam))
+        }
+        mutableMap += ((vwHyperParam, listValues))
+      } else {
+        mutableMap += ((vwHyperParam, point.get(vwHyperParam)))
+      }
+
+      mutableMap
     }
 
     // Remove cache params
@@ -57,7 +64,10 @@ trait VwFunctions {
     vwParamMap.foldLeft(new StringBuilder) { case (sb, (vwArg, vwValue)) =>
       val dashes = if (vwArg.length == 1) "-" else "--"
       val vwParam = vwValue match {
-        case value: Iterable[_] => value.map(x => s"$dashes$vwArg ${x.toString}").mkString(" ")
+        case value: Iterable[_] => value.map {
+          case it: Iterable[_] => s"$dashes$vwArg ${it.mkString}"
+          case x => s"$dashes$vwArg ${x.toString}"
+        }.mkString(" ") + " "
         case _ => s"$dashes$vwArg $vwValue "
       }
       sb ++= vwParam

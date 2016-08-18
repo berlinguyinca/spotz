@@ -1,8 +1,8 @@
 package com.eharmony.spotz.backend
 
 import com.eharmony.spotz.objective.Objective
-import com.eharmony.spotz.optimizer.RandomSampler
 import com.eharmony.spotz.optimizer.grid.Grid
+import com.eharmony.spotz.optimizer.hyperparam.RandomSampler
 
 import scala.reflect.ClassTag
 
@@ -31,13 +31,13 @@ trait ParallelFunctions extends BackendFunctions {
     * @return the best point with the best loss as a tuple
     */
   protected override def bestRandomPointAndLoss[P, L](
-      startIndex: Long,
-      batchSize: Long,
-      objective: Objective[P, L],
-      reducer: ((P, L), (P, L)) => (P, L),
-      hyperParams: Map[String, RandomSampler[_]],
-      seed: Long = 0,
-      sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
+                                                       startIndex: Long,
+                                                       batchSize: Long,
+                                                       objective: Objective[P, L],
+                                                       reducer: ((P, L), (P, L)) => (P, L),
+                                                       hyperParams: Map[String, RandomSampler[_]],
+                                                       seed: Long = 0,
+                                                       sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
 
     val pointsAndLosses = (startIndex until (startIndex + batchSize)).par.map { trial =>
       val point = sampleFunction(hyperParams, seed + trial)

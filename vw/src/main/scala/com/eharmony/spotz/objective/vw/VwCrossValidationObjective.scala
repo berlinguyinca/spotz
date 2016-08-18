@@ -3,13 +3,16 @@ package com.eharmony.spotz.objective.vw
 import com.eharmony.spotz.Preamble.Point
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.objective.vw.util.{FSVwDatasetFunctions, SparkVwDatasetFunctions, VwCrossValidation}
-import com.eharmony.spotz.util.{FileUtil, Logging}
+import com.eharmony.spotz.util.{FileUtil, Logging, SparkFileUtil}
 import org.apache.spark.SparkContext
 
-import scala.io.Source
-
 /**
-  * @author vsuthichai
+  * Perform K Fold cross validation given a dataset formatted for Vowpal Wabbit.
+  *
+  * @param numFolds
+  * @param vwDataset
+  * @param vwTrainParamsString
+  * @param vwTestParamsString
   */
 abstract class AbstractVwCrossValidationObjective(
     val numFolds: Int,
@@ -32,7 +35,7 @@ abstract class AbstractVwCrossValidationObjective(
            vwDatasetPath: String,
            vwTrainParamsString: Option[String],
            vwTestParamsString: Option[String]) = {
-    this(numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+    this(numFolds, FileUtil.loadFile(vwDatasetPath), vwTrainParamsString, vwTestParamsString)
   }
 
   val vwTrainParamsMap = parseVwArgs(vwTrainParamsString)
@@ -114,7 +117,7 @@ class SparkVwCrossValidationObjective(
            vwDatasetPath: String,
            vwTrainParamsString: Option[String],
            vwTestParamsString: Option[String]) = {
-    this(sc, numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+    this(sc, numFolds, SparkFileUtil.loadFile(sc, vwDatasetPath), vwTrainParamsString, vwTestParamsString)
   }
 }
 
@@ -137,6 +140,6 @@ class VwCrossValidationObjective(
            vwDatasetPath: String,
            vwTrainParamsString: Option[String],
            vwTestParamsString: Option[String]) = {
-    this(numFolds, Source.fromInputStream(FileUtil.loadFile(vwDatasetPath)).getLines(), vwTrainParamsString, vwTestParamsString)
+    this(numFolds, FileUtil.loadFile(vwDatasetPath), vwTrainParamsString, vwTestParamsString)
   }
 }

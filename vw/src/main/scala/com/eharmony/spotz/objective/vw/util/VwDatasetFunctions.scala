@@ -17,7 +17,7 @@ import scala.io.Source
 trait VwDatasetFunctions extends FileFunctions {
   def saveAsCache(inputIterator: Iterator[String]): String = saveAsCache(inputIterator, "dataset.cache")
   def saveAsCache(inputIterable: Iterable[String]): String = saveAsCache(inputIterable.toIterator)
-  def saveAsCache(inputPath: String): String = saveAsCache(Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines())
+  def saveAsCache(inputPath: String): String = saveAsCache(FileUtil.loadFile(inputPath))
 
   def saveAsCache(vwDataset: Iterator[String], vwCacheFilename: String): String = {
     // Write VW dataset to a temporary file
@@ -61,7 +61,7 @@ trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions
   */
 trait VwCrossValidation extends VwDatasetFunctions {
   def kFold(inputPath: String, folds: Int): Map[Int, (String, String)] = {
-    val enumeratedVwInput = Source.fromInputStream(FileUtil.loadFile(inputPath)).getLines()
+    val enumeratedVwInput = FileUtil.loadFile(inputPath)
     kFold(enumeratedVwInput, folds)
   }
 
