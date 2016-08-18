@@ -13,3 +13,6 @@ import scala.util.Random
 trait RandomSampler[T] extends Serializable {
   def apply(rng: Random): T
 }
+
+trait CombinatoricRandomSampler[T] extends RandomSampler[Iterable[Iterable[T]]]
+trait IterableRandomSampler[T] extends RandomSampler[Iterable[T]]

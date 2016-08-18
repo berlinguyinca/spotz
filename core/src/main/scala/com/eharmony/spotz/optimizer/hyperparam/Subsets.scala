@@ -3,6 +3,14 @@ package com.eharmony.spotz.optimizer.hyperparam
 import scala.collection.mutable
 import scala.util.Random
 
+/**
+  *
+  * @param iterable
+  * @param k
+  * @param replacement
+  * @param ord
+  * @tparam T
+  */
 abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boolean = false)(implicit ord: Ordering[T]) extends Serializable {
   protected val values = iterable.toIndexedSeq
 
@@ -13,13 +21,12 @@ abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boo
 
     while (subset.size < sampleSize) {
       val index = rng.nextInt(values.size)
-      val element = values(index)
 
       if (replacement) {
-        subset.add(element)
+        subset.add(values(index))
       } else if (!indices.contains(index)) {
         indices.add(index)
-        subset.add(element)
+        subset.add(values(index))
       }
     }
 
@@ -27,6 +34,14 @@ abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boo
   }
 }
 
+/**
+  *
+  * @param iterable
+  * @param k
+  * @param replacement
+  * @param ord
+  * @tparam T
+  */
 case class Subset[T](
     iterable: Iterable[T],
     k: Int,

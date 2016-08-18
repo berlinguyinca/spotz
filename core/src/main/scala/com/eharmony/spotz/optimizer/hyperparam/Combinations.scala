@@ -3,9 +3,6 @@ package com.eharmony.spotz.optimizer.hyperparam
 import scala.collection.mutable
 import scala.util.Random
 
-trait CombinatoricRandomSampler[T] extends RandomSampler[Iterable[Iterable[T]]]
-trait IterableRandomSampler[T] extends RandomSampler[Iterable[T]]
-
 /**
   *
   * @param iterable
@@ -46,10 +43,9 @@ abstract class AbstractCombinations[T](
 
     while (combo.size < k) {
       val index = rng.nextInt(values.length)
-      val element = values(rng.nextInt(values.length))
       if (!indices.contains(index)) {
         indices.add(index)
-        combo.add(element)
+        combo.add(values(index))
       }
     }
 
