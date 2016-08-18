@@ -4,11 +4,15 @@ import scala.collection.mutable
 import scala.util.Random
 
 /**
+  * Sample with or without replacement a combination of K items from an iterable
+  * of length N.  The combination returned will never be an empty set.  Samples
+  * returned are in lexicographical order.
   *
-  * @param iterable
-  * @param k
-  * @param replacement
-  * @tparam T
+  * @param iterable an iterable of type T
+  * @param k number of items to choose from the iterable
+  * @param replacement boolean indicating sample with or without replacement
+  * @param ord Ordering of type T
+  * @tparam T element type of iterable
   */
 abstract class AbstractCombinations[T](
     iterable: Iterable[T],
@@ -17,12 +21,12 @@ abstract class AbstractCombinations[T](
 
   protected val values = iterable.toSeq
 
-  def sample(rng: Random): Iterable[T] = {
+  protected def sample(rng: Random): Iterable[T] = {
     if (replacement) sampleWithReplacement(rng)
     else sampleNoReplacement(rng)
   }
 
-  def sampleWithReplacement(rng: Random) = {
+  protected def sampleWithReplacement(rng: Random) = {
     val combo = new mutable.PriorityQueue[T]()
 
     while (combo.size < k) {
@@ -33,7 +37,7 @@ abstract class AbstractCombinations[T](
     combo.toIndexedSeq
   }
 
-  def sampleNoReplacement(rng: Random) = {
+  protected def sampleNoReplacement(rng: Random) = {
     val combo = mutable.SortedSet[T]()
     val indices = mutable.Set[Int]()
 
@@ -50,12 +54,13 @@ abstract class AbstractCombinations[T](
 }
 
 /**
-  * Sample a single combination of K unordered items from the iterable of length N.
+  * Sample a single combination of K items from the iterable of length N.
   *
-  * @param iterable
-  * @param k
-  * @param replacement
-  * @tparam T
+  * @param iterable an iterable of type T
+  * @param k the number of items to sample from the iterable of length N
+  * @param replacement boolean indicating whether to sample with replacement
+  * @param ord Ordering of type T
+  * @tparam T element type of iterable
   */
 case class Combination[T](
     iterable: Iterable[T],
@@ -71,14 +76,16 @@ case class Combination[T](
 
 
 /**
-  * Binomial coefficient implementation.  Pick K unordered items from an Iterable of N items.
+  * Binomial coefficient implementation.  Choose K items from an Iterable of N items.
   * Also known as N Choose K, where N is the size of an Iterable and K is the desired number
-  * of items to be chosen.  This implementation will actually compute all the possible choices
-  * and return them as an Iterable.
+  * of items to be chosen.  Items will always be returned in lexicographical order.
   *
   * @param iterable an iterable of finite length
-  * @param k the number of items to choose
-  * @tparam T
+  * @param k the number of items to sample from the iterable of length N to form a combination
+  * @param x number of combinations to sample
+  * @param replacement boolean indicating whether to sample with replacement
+  * @param ord Ordering of type T
+  * @tparam T element type of iterable
   */
 case class Combinations[T](
     iterable: Iterable[T],

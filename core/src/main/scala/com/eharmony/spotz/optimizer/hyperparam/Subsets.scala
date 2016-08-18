@@ -4,21 +4,28 @@ import scala.collection.mutable
 import scala.util.Random
 
 /**
+  * Sample a subset of size up to K from an iterable of length N, with or without replacement
   *
-  * @param iterable
-  * @param k
-  * @param replacement
-  * @param ord
-  * @tparam T
+  * @param iterable an iterable of length N
+  * @param K number of items sampled, up to K, chosen randomly between 1 to K
+  * @param replacement boolean indicating sample with or without replacement
+  * @param ord ordering of type T
+  * @tparam T element type of iterable
   */
-abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boolean = false)(implicit ord: Ordering[T]) extends Serializable {
+abstract class AbstractSubset[T](
+    iterable: Iterable[T],
+    K: Int,
+    replacement: Boolean = false)
+    (implicit ord: Ordering[T])
+  extends Serializable {
+
   protected val values = iterable.toIndexedSeq
 
-  def sampleWithReplacement(rng: Random): Iterable[T] = {
-    val sampleSize = rng.nextInt(k) + 1
+  protected def sampleWithReplacement(rng: Random): Iterable[T] = {
+    val sampleSize = rng.nextInt(K) + 1
     val subset = new mutable.PriorityQueue[T]()
 
-    while (subset.size < k) {
+    while (subset.size < K) {
       val index = rng.nextInt(values.length)
       subset += values(index)
     }
@@ -26,8 +33,8 @@ abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boo
     subset.toIndexedSeq
   }
 
-  def sampleNoReplacement(rng: Random): Iterable[T] = {
-    val sampleSize = rng.nextInt(k) + 1
+  protected def sampleNoReplacement(rng: Random): Iterable[T] = {
+    val sampleSize = rng.nextInt(K) + 1
     val subset = mutable.SortedSet[T]()
     val indices = mutable.Set[Int]()
 
@@ -43,61 +50,58 @@ abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boo
     subset.toIndexedSeq
   }
 
-  def sample(rng: Random): Iterable[T] = {
+  protected def sample(rng: Random): Iterable[T] = {
     if (replacement) sampleWithReplacement(rng)
     else sampleNoReplacement(rng)
   }
 }
 
 /**
+  * Sample a single subset.
   *
-  * @param iterable
-  * @param k
-  * @param replacement
-  * @param ord
-  * @tparam T
+  * @param iterable an iterable of length N
+  * @param K number of items sampled, up to K, chosen randomly between 1 to K
+  * @param replacement boolean indicating sample with or without replacement
+  * @param ord ordering of type T
+  * @tparam T element type of iterable
   */
 case class Subset[T](
     iterable: Iterable[T],
-    k: Int,
+    K: Int,
     replacement: Boolean = false)
     (implicit ord: Ordering[T])
-  extends AbstractSubset[T](iterable, k, replacement)
+  extends AbstractSubset[T](iterable, K, replacement)
   with IterableRandomSampler[T] {
 
-  assert(k > 0 && k <= values.size, "K must be in the interval (0, N]")
+  assert(K > 0 && K <= values.size, "K must be in the interval (0, N]")
 
   def apply(rng: Random): Iterable[T] = sample(rng)
 }
 
 /**
+  * Sample many subsets, up to X subsets.
   *
-  * @param iterable
-  * @param k
-  * @param x
-  * @param replacement
-  * @param ord
-  * @tparam T
+  * @param iterable an iterable of length N
+  * @param K number of items sampled, up to K, chosen randomly between 1 to K
+  * @param X number of subsets to sample
+  * @param replacement boolean indicating sample with or without replacement
+  * @param ord ordering of type T
+  * @tparam T element type of iterable
   */
 case class Subsets[T](
     iterable: Iterable[T],
-    k: Int,
-    x: Int,
+    K: Int,
+    X: Int,
     replacement: Boolean = false)
     (implicit ord: Ordering[T])
-  extends AbstractSubset[T](iterable, k, replacement)
+  extends AbstractSubset[T](iterable, K, replacement)
   with CombinatoricRandomSampler[T] {
 
-  assert(k > 0 && k <= values.size, "K must be in the interval (0, N]")
-  assert(x > 0, "X must be greater than 0")
+  assert(K > 0 && K <= values.size, "K must be in the interval (0, N]")
+  assert(X > 0, "X must be greater than 0")
 
-  /**
-    *
-    * @param rng
-    * @return
-    */
   def apply(rng: Random): Iterable[Iterable[T]] = {
-    val numSubsets = rng.nextInt(x) + 1
+    val numSubsets = rng.nextInt(X) + 1
 
     if (replacement) {
       Seq.fill(numSubsets)(sample(rng))
