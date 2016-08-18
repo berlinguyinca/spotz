@@ -14,7 +14,19 @@ import scala.util.Random
 abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boolean = false)(implicit ord: Ordering[T]) extends Serializable {
   protected val values = iterable.toIndexedSeq
 
-  def sample(rng: Random): Iterable[T] = {
+  def sampleWithReplacement(rng: Random): Iterable[T] = {
+    val sampleSize = rng.nextInt(k) + 1
+    val subset = new mutable.PriorityQueue[T]()
+
+    while (subset.size < k) {
+      val index = rng.nextInt(values.length)
+      subset += values(index)
+    }
+
+    subset.toIndexedSeq
+  }
+
+  def sampleNoReplacement(rng: Random): Iterable[T] = {
     val sampleSize = rng.nextInt(k) + 1
     val subset = mutable.SortedSet[T]()
     val indices = mutable.Set[Int]()
@@ -22,15 +34,18 @@ abstract class AbstractSubset[T](iterable: Iterable[T], k: Int, replacement: Boo
     while (subset.size < sampleSize) {
       val index = rng.nextInt(values.size)
 
-      if (replacement) {
-        subset.add(values(index))
-      } else if (!indices.contains(index)) {
+      if (!indices.contains(index)) {
         indices.add(index)
         subset.add(values(index))
       }
     }
 
     subset.toIndexedSeq
+  }
+
+  def sample(rng: Random): Iterable[T] = {
+    if (replacement) sampleWithReplacement(rng)
+    else sampleNoReplacement(rng)
   }
 }
 

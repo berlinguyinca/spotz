@@ -17,24 +17,20 @@ abstract class AbstractCombinations[T](
 
   protected val values = iterable.toSeq
 
-  assert(k > 0, "k must be greater than 0")
-  assert(k <= values.length, s"k must be less than or equal to length of the iterable, ${values.length}")
-
   def sample(rng: Random): Iterable[T] = {
     if (replacement) sampleWithReplacement(rng)
     else sampleNoReplacement(rng)
   }
 
   def sampleWithReplacement(rng: Random) = {
-    val combo = mutable.SortedSet[T]()
+    val combo = new mutable.PriorityQueue[T]()
 
     while (combo.size < k) {
       val index = rng.nextInt(values.length)
-      val element = values(rng.nextInt(values.length))
-      combo.add(element)
+      combo += values(index)
     }
 
-    combo.toSeq
+    combo.toIndexedSeq
   }
 
   def sampleNoReplacement(rng: Random) = {
@@ -49,7 +45,7 @@ abstract class AbstractCombinations[T](
       }
     }
 
-    combo.toSeq
+    combo.toIndexedSeq
   }
 }
 

@@ -41,7 +41,7 @@ trait VwHoldout extends AbstractVwHoldout {
 trait VwHoldoutRandomSearch extends VwHoldout {
   val space = Map(
     ("l", UniformDouble(0, 1)),
-    ("q", Combinations(List("a", "b", "c", "d"), k = 2, x = 2))
+    ("interactions", Combinations('a' to 'z', k = 4, x = 7))
   )
 
   def main(args: Array[String]) {
