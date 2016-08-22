@@ -3,7 +3,7 @@ package com.eharmony.spotz.util
 import java.io.{File, InputStream}
 
 import org.apache.commons.io.FilenameUtils
-import org.apache.commons.vfs2.{FileNotFoundException, VFS}
+import org.apache.commons.vfs2.{FileNotFoundException, FileSystemManager, VFS}
 
 import scala.io.Source
 
@@ -11,7 +11,8 @@ import scala.io.Source
   * @author vsuthichai
   */
 object FileUtil {
-  private val vfs2 = VFS.getManager
+  private val vfs2: FileSystemManager = VFS.getManager
+  private val pwd = new File(System.getProperty("user.dir"))
 
   /**
     * Return a file with a filename guaranteed not to be used on the file system.  This is
@@ -55,7 +56,7 @@ object FileUtil {
     * @return
     */
   def loadFileInputStream(path: String): InputStream = {
-    val vfsFile = vfs2.resolveFile(path)
+    val vfsFile = vfs2.resolveFile(pwd, path)
     vfsFile.getContent.getInputStream
   }
 }

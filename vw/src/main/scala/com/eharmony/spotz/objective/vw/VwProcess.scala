@@ -1,7 +1,7 @@
 package com.eharmony.spotz.objective.vw
 
 import com.eharmony.spotz.util.RegexUtil.floatingPointRegex
-import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
+import com.eharmony.spotz.util.{CommandLineProcess, Logging, ProcessResult}
 
 /**
   * A VW Process run.  The parameters are passed as a string in the exact same
@@ -11,7 +11,7 @@ import com.eharmony.spotz.util.{CommandLineProcess, ProcessResult}
   *
   * @param params vw args
   */
-case class VwProcess(params: String) extends CommandLineProcess(s"vw $params", None) {
+case class VwProcess(params: String) extends CommandLineProcess(s"vw $params", None) with Logging {
 
   /**
     * Execute the VW process and return a VWResult object with the VW exit code,
@@ -21,6 +21,8 @@ case class VwProcess(params: String) extends CommandLineProcess(s"vw $params", N
     */
   def apply(): VwResult = {
     val processResult = super.apply()
+
+    info(s"Executing VW Process: vw $params")
 
     VwResult(processResult.exitCode,
              processResult.stdout,
@@ -50,6 +52,14 @@ case class VwResult(
 
 object VwProcess {
   val avgLossRegex = s"average\\s+loss\\s+=\\s+($floatingPointRegex)".r
+
+  def generateCacheProcess(vwDatasetPath: String, cachePath: String, bitSize: Int = 18) {
+    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -d $vwDatasetPath -b $bitSize")
+    val vwCacheResult = vwCacheProcess()
+
+    assert(vwCacheResult.exitCode == 0,
+      s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
+  }
 }
 
 /**

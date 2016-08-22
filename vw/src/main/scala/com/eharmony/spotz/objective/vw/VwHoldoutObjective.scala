@@ -9,15 +9,22 @@ import org.apache.spark.SparkContext
 /**
   * @author vsuthichai
   */
-
 abstract class AbstractVwHoldoutObjective(
-    vwTrainSetIterator: Iterator[String],
+    vwTrainSetPath: String,
     vwTrainParamsString: Option[String],
-    vwTestSetIterator: Iterator[String],
+    vwTestSetPath: String,
     vwTestParamsString: Option[String])
   extends Objective[Point, Double]
-    with VwFunctions
-    with VwDatasetFunctions with Logging {
+  with VwFunctions
+  with VwDatasetFunctions with Logging {
+
+  def this(vwTrainSetIterator: Iterator[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterator: Iterator[String],
+           vwTestParamsString: Option[String]) = {
+    this(VwDatasetFunctions.saveIteratorToDataset(vwTrainSetIterator, "train-dataset.vw").getAbsolutePath, vwTrainParamsString,
+         VwDatasetFunctions.saveIteratorToDataset(vwTestSetIterator, "test-dataset.vw").getAbsolutePath, vwTestParamsString)
+  }
 
   def this(vwTrainSetIterable: Iterable[String],
            vwTrainParamsString: Option[String],
@@ -26,18 +33,13 @@ abstract class AbstractVwHoldoutObjective(
     this(vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString)
   }
 
-  def this(vwTrainSetPath: String,
-           vwTrainParamsString: Option[String],
-           vwTestSetPath: String,
-           vwTestParamsString: Option[String]) = {
-    this(FileUtil.loadFile(vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
-  }
-
   val vwTrainParamMap = parseVwArgs(vwTrainParamsString)
   val vwTestParamMap = parseVwArgs(vwTestParamsString)
 
-  val vwTrainCacheFilename = saveAsCache(vwTrainSetIterator)
-  val vwTestCacheFilename = saveAsCache(vwTestSetIterator)
+  val cacheBitSize = getCacheBitSize(vwTrainParamMap)
+
+  val vwTrainCacheFilename = saveAsCache(vwTrainSetPath, "train-dataset.cache", cacheBitSize)
+  val vwTestCacheFilename = saveAsCache(vwTestSetPath, "test-dataset.cache", cacheBitSize)
 
   override def apply(point: Point): Double = {
     // Initialize the model file on the filesystem.  Reserve a unique filename.
@@ -71,13 +73,23 @@ abstract class AbstractVwHoldoutObjective(
 
 class SparkVwHoldoutObjective(
     @transient val sc: SparkContext,
-    vwTrainSetIterator: Iterator[String],
+    vwTrainSetPath: String,
     vwTrainParamsString: Option[String],
-    vwTestSetIterator: Iterator[String],
+    vwTestSetPath: String,
     vwTestParamsString: Option[String])
-  extends AbstractVwHoldoutObjective(vwTrainSetIterator, vwTrainParamsString, vwTestSetIterator, vwTestParamsString)
+  extends AbstractVwHoldoutObjective(vwTrainSetPath, vwTrainParamsString, vwTestSetPath, vwTestParamsString)
   with SparkVwDatasetFunctions
   with Logging {
+
+
+  def this(sc: SparkContext,
+           vwTrainSetIterator: Iterator[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterator: Iterator[String],
+           vwTestParamsString: Option[String]) = {
+    this(sc, VwDatasetFunctions.saveIteratorToDataset(vwTrainSetIterator, "train-dataset.vw").getAbsolutePath, vwTrainParamsString,
+         VwDatasetFunctions.saveIteratorToDataset(vwTestSetIterator, "test-dataset.vw").getAbsolutePath, vwTestParamsString)
+  }
 
   def this(sc: SparkContext,
            vwTrainSetIterable: Iterable[String],
@@ -87,22 +99,50 @@ class SparkVwHoldoutObjective(
     this(sc, vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString)
   }
 
+  /*
+  vwTrainSetIterator: Iterator[String],
+  vwTrainParamsString: Option[String],
+  vwTestSetIterator: Iterator[String],
+  vwTestParamsString: Option[String],
+  cacheBitSize: Option[Int] = Option(18)
+
+
+  def this(sc: SparkContext,
+           vwTrainSetIterable: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterable: Iterable[String],
+           vwTestParamsString: Option[String],
+           cacheBitSize: Option[Int] = Option(18)) = {
+    this(sc, vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString, cacheBitSize)
+  }
+
   def this(sc: SparkContext,
            vwTrainSetPath: String,
            vwTrainParamsString: Option[String],
            vwTestSetPath: String,
-           vwTestParamsString: Option[String]) = {
-    this(sc, SparkFileUtil.loadFile(sc, vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
+           vwTestParamsString: Option[String],
+           cacheBitSize: Option[Int] = Option(18)) = {
+    this(sc, SparkFileUtil.loadFile(sc, vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString, cacheBitSize)
   }
+  */
 }
 
 class VwHoldoutObjective(
-    vwTrainSetIterator: Iterator[String],
+    vwTrainSetPath: String,
     vwTrainParamsString: Option[String],
-    vwTestSetIterator: Iterator[String],
+    vwTestSetPath: String,
     vwTestParamsString: Option[String])
-  extends AbstractVwHoldoutObjective(vwTrainSetIterator, vwTrainParamsString, vwTestSetIterator, vwTestParamsString)
+  extends AbstractVwHoldoutObjective(vwTrainSetPath, vwTrainParamsString, vwTestSetPath, vwTestParamsString)
     with FSVwDatasetFunctions {
+
+
+  def this(vwTrainSetIterator: Iterator[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterator: Iterator[String],
+           vwTestParamsString: Option[String]) = {
+    this(VwDatasetFunctions.saveIteratorToDataset(vwTrainSetIterator, "train-dataset.vw").getAbsolutePath, vwTrainParamsString,
+         VwDatasetFunctions.saveIteratorToDataset(vwTestSetIterator, "test-dataset.vw").getAbsolutePath, vwTestParamsString)
+  }
 
   def this(vwTrainSetIterable: Iterable[String],
            vwTrainParamsString: Option[String],
@@ -111,10 +151,27 @@ class VwHoldoutObjective(
     this(vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString)
   }
 
+/*
+  vwTrainSetIterator: Iterator[String],
+  vwTrainParamsString: Option[String],
+  vwTestSetIterator: Iterator[String],
+  vwTestParamsString: Option[String],
+  cacheBitSize: Option[Int] = Option(18)
+
+  def this(vwTrainSetIterable: Iterable[String],
+           vwTrainParamsString: Option[String],
+           vwTestSetIterable: Iterable[String],
+           vwTestParamsString: Option[String],
+           cacheBitSize: Option[Int] = Option(18)) = {
+    this(vwTrainSetIterable.toIterator, vwTrainParamsString, vwTestSetIterable.toIterator, vwTestParamsString, cacheBitSize)
+  }
+
   def this(vwTrainSetPath: String,
            vwTrainParamsString: Option[String],
            vwTestSetPath: String,
-           vwTestParamsString: Option[String]) = {
-    this(FileUtil.loadFile(vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString)
+           vwTestParamsString: Option[String],
+           cacheBitSize: Option[Int] = Option(18)) = {
+    this(FileUtil.loadFile(vwTrainSetPath), vwTrainParamsString, FileUtil.loadFile(vwTestSetPath), vwTestParamsString, cacheBitSize)
   }
+  */
 }

@@ -40,7 +40,9 @@ abstract class AbstractVwCrossValidationObjective(
 
   val vwTrainParamsMap = parseVwArgs(vwTrainParamsString)
   val vwTestParamsMap = parseVwArgs(vwTestParamsString)
-  val foldToVwCacheFiles = kFold(vwDataset, numFolds)
+  val cacheBitSize = getCacheBitSize(vwTrainParamsMap)
+
+  val foldToVwCacheFiles = kFold(vwDataset, numFolds, cacheBitSize)
 
   /**
     * This method can run on the driver and/or the executor.  It performs a k-fold cross validation
@@ -102,7 +104,7 @@ class SparkVwCrossValidationObjective(
     vwTrainParamsString: Option[String],
     vwTestParamsString: Option[String])
   extends AbstractVwCrossValidationObjective(numFolds, vwDataset, vwTrainParamsString, vwTestParamsString)
-    with SparkVwDatasetFunctions {
+  with SparkVwDatasetFunctions {
 
   def this(sc: SparkContext,
            numFolds: Int,

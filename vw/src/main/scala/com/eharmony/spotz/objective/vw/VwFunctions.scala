@@ -39,25 +39,22 @@ trait VwFunctions {
       mutableMap
     }
 
-    // Remove cache params
-    vwParamsMutableMap.remove("cache_file")
-    vwParamsMutableMap.remove("c")
-    vwParamsMutableMap.remove("k")
+    removeParams(vwParamsMutableMap).toMap
+  }
 
-    // Remove final regressor
-    vwParamsMutableMap.remove("f")
-    vwParamsMutableMap.remove("final_regressor")
+  def removeParams(vwParamsMutableMap: mutable.Map[String, _]): mutable.Map[String, _] = {
+    // Remove params
+    vwParamsMutableMap.remove("cache_file")        // cache
+    vwParamsMutableMap.remove("c")                 // cache
+    vwParamsMutableMap.remove("k")                 // kill cache
+    vwParamsMutableMap.remove("f")                 // final regressor
+    vwParamsMutableMap.remove("final_regressor")   // final regressor
+    vwParamsMutableMap.remove("t")                 // test mode
+    vwParamsMutableMap.remove("i")                 // initial regressor
+    vwParamsMutableMap.remove("initial_regressor") // initial regressor
+    vwParamsMutableMap.remove("d")                 // dataset parameter
 
-    // Remove test mode
-    vwParamsMutableMap.remove("t")
-
-    // Remove input
-    vwParamsMutableMap.remove("i")
-
-    // Remove dataset param
-    vwParamsMutableMap.remove("d")
-
-    vwParamsMutableMap.toMap
+    vwParamsMutableMap
   }
 
   def vwParamMapToString(vwParamMap: Map[String, _]): String = {
@@ -79,8 +76,19 @@ trait VwFunctions {
   }
 
   def getTestVwParams(vwParamMap: Map[String, _], point: Point): String = {
-    vwParamMapToString(vwParamMap)
-    // vwParamMapToString(mergeVwParams(vwParamMap, point))
+    vwParamMapToString(removeParams(mutable.Map(vwParamMap.toSeq: _*)).toMap)
+  }
+
+  def getCacheBitSize(vwParamMap: Map[String, _]): Int = {
+    vwParamMap.get("b") match {
+      case Some(b: String) => b.toInt
+      case None => vwParamMap.get("bit_precision") match {
+        case Some(b: String) => b.toInt
+        case None => 18
+        case _ => throw new IllegalArgumentException(s"Invalid bit size ${vwParamMap("bit_precision")}")
+      }
+      case _ => throw new IllegalArgumentException(s"Invalid bit size ${vwParamMap("b")}")
+    }
   }
 
   def parseVwArgs(args: Option[String]) = VwArgParser(args)

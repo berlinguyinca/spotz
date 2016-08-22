@@ -6,7 +6,6 @@ import com.eharmony.spotz.objective.vw.VwProcess
 import com.eharmony.spotz.util.{FileFunctions, FileSystemFunctions, FileUtil, SparkFileFunctions}
 
 import scala.collection.mutable
-import scala.io.Source
 
 /**
   * Create and save a cache file given a VW dataset.  The implication of saving means that
@@ -15,31 +14,39 @@ import scala.io.Source
   * is just saved locally to the file system.
   */
 trait VwDatasetFunctions extends FileFunctions {
-  def saveAsCache(inputIterator: Iterator[String]): String = saveAsCache(inputIterator, "dataset.cache")
-  def saveAsCache(inputIterable: Iterable[String]): String = saveAsCache(inputIterable.toIterator)
-  def saveAsCache(inputPath: String): String = saveAsCache(FileUtil.loadFile(inputPath))
+  import VwDatasetFunctions._
 
-  def saveAsCache(vwDataset: Iterator[String], vwCacheFilename: String): String = {
+  def saveAsCache(vwDatasetIterable: Iterable[String], vwCacheFilename: String, bitSize: Int): String = {
+    saveAsCache(vwDatasetIterable.toIterator, vwCacheFilename, bitSize)
+  }
+
+  def saveAsCache(vwDatasetIterator: Iterator[String], vwCacheFilename: String, bitSize: Int): String = {
     // Write VW dataset to a temporary file
-    val vwDatasetFile = FileUtil.tempFile("dataset.vw")
-    val vwDatasetWriter = new PrintWriter(vwDatasetFile)
-    vwDataset.foreach(line => vwDatasetWriter.println(line))
-    vwDatasetWriter.close()
+    val vwDatasetFile = saveIteratorToDataset(vwDatasetIterator, "dataset.vw")
     // vwDatasetFile.delete()
 
     // Create a VW cache file from the dataset
-    val vwCacheFile = FileUtil.tempFile(vwCacheFilename)
-    val vwCacheProcess = VwProcess(s"-k --cache_file ${vwCacheFile.getAbsolutePath} -d ${vwDatasetFile.getAbsolutePath}")
-    val vwCacheResult = vwCacheProcess()
+    saveAsCache(vwDatasetFile.getAbsolutePath, vwCacheFilename, bitSize)
+  }
 
-    assert(vwCacheResult.exitCode == 0,
-      s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
-
+  def saveAsCache(vwDatasetPath: String, vwCacheFilename: String, bitSize: Int): String = {
+    val vwCacheFile = FileUtil.tempFile(vwCacheFilename, false)
+    VwProcess.generateCacheProcess(vwDatasetPath, vwCacheFile.getAbsolutePath, bitSize)
     save(vwCacheFile)
     vwCacheFile.getName
   }
 
   def getCache(name: String): File = get(name)
+}
+
+object VwDatasetFunctions {
+  def saveIteratorToDataset(vwDatasetIterator: Iterator[String], vwDatasetFilename: String) = {
+    val vwDatasetFile = FileUtil.tempFile(vwDatasetFilename)
+    val vwDatasetWriter = new PrintWriter(vwDatasetFile)
+    vwDatasetIterator.foreach(line => vwDatasetWriter.println(line))
+    vwDatasetWriter.close()
+    vwDatasetFile
+  }
 }
 
 /**
@@ -60,13 +67,13 @@ trait SparkVwDatasetFunctions extends VwDatasetFunctions with SparkFileFunctions
   * Perform kFold CrossValidation on VW Dataset.
   */
 trait VwCrossValidation extends VwDatasetFunctions {
-  def kFold(inputPath: String, folds: Int): Map[Int, (String, String)] = {
+  def kFold(inputPath: String, folds: Int, cacheBitSize: Int): Map[Int, (String, String)] = {
     val enumeratedVwInput = FileUtil.loadFile(inputPath)
-    kFold(enumeratedVwInput, folds)
+    kFold(enumeratedVwInput, folds, cacheBitSize)
   }
 
-  def kFold(vwDataset: Iterable[String], folds: Int): Map[Int, (String, String)] = {
-    kFold(vwDataset.toIterator, folds)
+  def kFold(vwDataset: Iterable[String], folds: Int, cacheBitSize: Int): Map[Int, (String, String)] = {
+    kFold(vwDataset.toIterator, folds, cacheBitSize)
   }
 
   /**
@@ -90,7 +97,7 @@ trait VwCrossValidation extends VwDatasetFunctions {
     * @return a map representation where key is the fold number and value is
     *         (trainingSetFilename, testSetFilename)
     */
-  def kFold(vwDataset: Iterator[String], folds: Int): Map[Int, (String, String)] = {
+  def kFold(vwDataset: Iterator[String], folds: Int, cacheBitSize: Int): Map[Int, (String, String)] = {
     val enumeratedVwDataset = vwDataset.zipWithIndex.toList
 
     // For every fold iteration, partition the vw input such that one fold is the test set and the
@@ -104,10 +111,10 @@ trait VwCrossValidation extends VwDatasetFunctions {
       }
 
       val train = trainWithLineNumber.map { case (line, lineNumber) => line }.toIterator
-      val vwTrainingCacheFilename = saveAsCache(train, s"train-fold-$fold.cache")
+      val vwTrainingCacheFilename = saveAsCache(train, s"train-fold-$fold.cache", cacheBitSize)
 
       val test = testWithLineNumber.map { case (line, lineNumber) => line }.toIterator
-      val vwTestCacheFilename = saveAsCache(test, s"test-fold-$fold.cache")
+      val vwTestCacheFilename = saveAsCache(test, s"test-fold-$fold.cache", cacheBitSize)
 
       // Add it to the map which will be referenced later on the executor
       map + ((fold, (vwTrainingCacheFilename, vwTestCacheFilename)))
