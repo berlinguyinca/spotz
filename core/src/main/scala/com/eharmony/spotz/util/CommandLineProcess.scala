@@ -1,5 +1,7 @@
 package com.eharmony.spotz.util
 
+import java.io.InputStream
+
 import scala.sys.process._
 
 /**
@@ -8,11 +10,14 @@ import scala.sys.process._
   * @param cmd the command line to execute
   * @param stdin standard input
   */
-class CommandLineProcess(cmd: String, stdin: Option[Iterator[String]]) extends Serializable {
+class CommandLineProcess(cmd: String, stdin: Option[InputStream]) extends Serializable {
   private val stdoutBuffer = new StringBuilder
   private val stderrBuffer = new StringBuilder
-  private val processLogger = ProcessLogger(line => stdoutBuffer.append(line).append("\n"),
-                                                  line => stderrBuffer.append(line).append("\n"))
+
+  private val processLogger = ProcessLogger(
+    line => stdoutBuffer.append(line).append("\n"),
+    line => stderrBuffer.append(line).append("\n")
+  )
 
   /**
     * Execute.
@@ -20,8 +25,7 @@ class CommandLineProcess(cmd: String, stdin: Option[Iterator[String]]) extends S
     * @return a ProcessResult object
     */
   def apply[R <: ProcessResult](): ProcessResult = {
-    // TODO: support stdin
-    val exitCode = cmd ! processLogger
+    val exitCode = stdin.fold(cmd ! processLogger)(is => (cmd #< is) ! processLogger)
     val stdoutStr = stdoutBuffer.toString()
     val stderrStr = stderrBuffer.toString()
 

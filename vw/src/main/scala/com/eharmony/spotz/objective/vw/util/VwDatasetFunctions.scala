@@ -1,6 +1,6 @@
 package com.eharmony.spotz.objective.vw.util
 
-import java.io.{File, PrintWriter}
+import java.io._
 
 import com.eharmony.spotz.objective.vw.VwProcess
 import com.eharmony.spotz.util.{FileFunctions, FileSystemFunctions, FileUtil, SparkFileFunctions}
@@ -14,39 +14,28 @@ import scala.collection.mutable
   * is just saved locally to the file system.
   */
 trait VwDatasetFunctions extends FileFunctions {
-  import VwDatasetFunctions._
-
-  def saveAsCache(vwDatasetIterable: Iterable[String], vwCacheFilename: String, bitSize: Int): String = {
-    saveAsCache(vwDatasetIterable.toIterator, vwCacheFilename, bitSize)
+  def saveAsCache(vwDatasetInputStream: InputStream, vwCacheFilename: String, bitSize: Int): String = {
+    val vwCacheFile = FileUtil.tempFile(vwCacheFilename)
+    VwProcess.generateCache(vwDatasetInputStream, vwCacheFile.getAbsolutePath, bitSize)
+    save(vwCacheFile)
+    vwCacheFile.getName
   }
 
   def saveAsCache(vwDatasetIterator: Iterator[String], vwCacheFilename: String, bitSize: Int): String = {
-    // Write VW dataset to a temporary file
-    val vwDatasetFile = saveIteratorToDataset(vwDatasetIterator, "dataset.vw")
-    // vwDatasetFile.delete()
-
-    // Create a VW cache file from the dataset
-    saveAsCache(vwDatasetFile.getAbsolutePath, vwCacheFilename, bitSize)
+    val vwCacheFile = FileUtil.tempFile(vwCacheFilename, false)
+    VwProcess.generateCache(vwDatasetIterator, vwCacheFile.getAbsolutePath, bitSize)
+    save(vwCacheFile)
+    vwCacheFile.getName
   }
 
   def saveAsCache(vwDatasetPath: String, vwCacheFilename: String, bitSize: Int): String = {
-    val vwCacheFile = FileUtil.tempFile(vwCacheFilename, false)
-    VwProcess.generateCacheProcess(vwDatasetPath, vwCacheFile.getAbsolutePath, bitSize)
+    val vwCacheFile = FileUtil.tempFile(vwCacheFilename)
+    VwProcess.generateCache(vwDatasetPath, vwCacheFile.getAbsolutePath, bitSize)
     save(vwCacheFile)
     vwCacheFile.getName
   }
 
   def getCache(name: String): File = get(name)
-}
-
-object VwDatasetFunctions {
-  def saveIteratorToDataset(vwDatasetIterator: Iterator[String], vwDatasetFilename: String) = {
-    val vwDatasetFile = FileUtil.tempFile(vwDatasetFilename)
-    val vwDatasetWriter = new PrintWriter(vwDatasetFile)
-    vwDatasetIterator.foreach(line => vwDatasetWriter.println(line))
-    vwDatasetWriter.close()
-    vwDatasetFile
-  }
 }
 
 /**

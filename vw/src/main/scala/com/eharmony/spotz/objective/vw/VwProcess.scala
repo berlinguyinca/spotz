@@ -1,17 +1,20 @@
 package com.eharmony.spotz.objective.vw
 
+import java.io.{InputStream, PipedInputStream, PipedOutputStream, PrintWriter}
+
 import com.eharmony.spotz.util.RegexUtil.floatingPointRegex
-import com.eharmony.spotz.util.{CommandLineProcess, Logging, ProcessResult}
+import com.eharmony.spotz.util.{CommandLineProcess, Logging}
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * A VW Process run.  The parameters are passed as a string in the exact same
   * way they are passed as parameters on the vw command line.
-  *
-  * TODO: This doesn't currently support stdin.
-  *
+  **
   * @param params vw args
   */
-case class VwProcess(params: String) extends CommandLineProcess(s"vw $params", None) with Logging {
+case class VwProcess(params: String, stdin: Option[InputStream] = None) extends CommandLineProcess(s"vw $params", stdin) with Logging {
 
   /**
     * Execute the VW process and return a VWResult object with the VW exit code,
@@ -53,8 +56,29 @@ case class VwResult(
 object VwProcess {
   val avgLossRegex = s"average\\s+loss\\s+=\\s+($floatingPointRegex)".r
 
-  def generateCacheProcess(vwDatasetPath: String, cachePath: String, bitSize: Int = 18) {
-    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -d $vwDatasetPath -b $bitSize")
+  def generateCache(inputStream: InputStream, cachePath: String, bitSize: Int) {
+    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -b $bitSize", Option(inputStream))
+    val vwCacheResult = vwCacheProcess()
+
+    assert(vwCacheResult.exitCode == 0,
+      s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
+  }
+
+  def generateCache(vwDatasetIterator: Iterator[String], cachePath: String, bitSize: Int) {
+    val pos = new PipedOutputStream
+    val pis = new PipedInputStream(pos)
+    val pw = new PrintWriter(pos, true)
+
+    Future {
+      vwDatasetIterator.foreach(line => pw.println(line))
+      pw.close()
+    }
+
+    generateCache(pis, cachePath, bitSize)
+  }
+
+  def generateCache(vwDatasetPath: String, cachePath: String, bitSize: Int) {
+    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -d $vwDatasetPath -b $bitSize", None)
     val vwCacheResult = vwCacheProcess()
 
     assert(vwCacheResult.exitCode == 0,

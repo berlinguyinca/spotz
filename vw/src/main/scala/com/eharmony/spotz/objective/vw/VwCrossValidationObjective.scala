@@ -24,22 +24,9 @@ abstract class AbstractVwCrossValidationObjective(
   with VwCrossValidation
   with Logging {
 
-  def this(numFolds: Int,
-           vwDataset: Iterable[String],
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(numFolds, vwDataset.toIterator, vwTrainParamsString, vwTestParamsString)
-  }
-
-  def this(numFolds: Int,
-           vwDatasetPath: String,
-           vwTrainParamsString: Option[String],
-           vwTestParamsString: Option[String]) = {
-    this(numFolds, FileUtil.loadFile(vwDatasetPath), vwTrainParamsString, vwTestParamsString)
-  }
-
   val vwTrainParamsMap = parseVwArgs(vwTrainParamsString)
   val vwTestParamsMap = parseVwArgs(vwTestParamsString)
+
   val cacheBitSize = getCacheBitSize(vwTrainParamsMap)
 
   val foldToVwCacheFiles = kFold(vwDataset, numFolds, cacheBitSize)
