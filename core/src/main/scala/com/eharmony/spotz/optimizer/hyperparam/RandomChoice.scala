@@ -17,8 +17,7 @@ import scala.util.Random
 case class RandomChoice[T](iterable: Iterable[T]) extends RandomSampler[T] {
   private val values = iterable.toIndexedSeq
 
-  if (values.length < 1)
-    throw new IllegalArgumentException("Empty iterable")
+  require(values.length > 1, "Empty iterable")
 
   override def apply(rng: Random): T = values(rng.nextInt(values.length))
 }

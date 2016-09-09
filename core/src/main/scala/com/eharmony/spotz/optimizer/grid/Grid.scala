@@ -37,44 +37,42 @@ import scala.language.postfixOps
   *
   * @author vsuthichai
   */
-class Grid[P](
-    gridParams: Map[String, Iterable[_]])
-    (implicit factory: (Map[String, _]) => P)
-  extends Serializable
-  with Logging {
+class Grid[P](gridParams: Map[String, Iterable[_]])
+             (implicit factory: (Map[String, _]) => P) extends Serializable with Logging {
 
-  assert(gridParams.nonEmpty, "No grid parameters have been specified")
+  require(gridParams.nonEmpty, "No grid parameters have been specified")
 
   private lazy val gridRows = computeGrid()
   lazy val length = computeLength()
   lazy val size = length
 
   /**
-    * Expand the each grid row.  The memory required is linear in the sum of lengths of all
+    * Expand each grid row.  The memory required is linear in the sum of lengths of all
     * the iterables.  Pre-compute the divisible factor and store along with the length inside
     * GridRow.
-    *
-    * @return
     */
   private def computeGrid(): IndexedSeq[GridRow] = {
-    gridParams.map { case (label, it) => (label, it.toSeq) }
-      .foldRight(ArrayBuffer[GridRow]()) { case ((label, it), b) =>
-        if (b.isEmpty) GridRow(label, it, 1L, it.length.toLong) +=: b
-        else GridRow(label, it, b.head.length * b.head.divisor, it.length.toLong) +=: b
-      }.toIndexedSeq
+    val expandedGridParams = gridParams.map { case (label, it) => (label, it.toSeq) }
+
+    val gridRowProperties = expandedGridParams.foldRight(ArrayBuffer[GridRow]()) { case ((label, it), buf) =>
+      if (buf.isEmpty) GridRow(label, it, 1L, it.length.toLong) +=: buf
+      else GridRow(label, it, buf.head.length * buf.head.divisor, it.length.toLong) +=: buf
+    }
+
+    gridRowProperties.toIndexedSeq
   }
 
   private def computeLength(): Long = {
     val len = gridRows.foldLeft(1L)((product, gridRow) => product * gridRow.length)
-    info(s"$len hyper parameter tuples found in GridSpace")
+    info(s"$len hyper parameter tuples found in Grid space")
     len
   }
 
   /**
     * Retrieve an indexed element from this grid.
     *
-    * @param idx
-    * @return
+    * @param idx a zero-based index into the grid
+    * @return a point type P
     */
   def apply(idx: Long): P = {
     if (idx < 0 || idx >= size)

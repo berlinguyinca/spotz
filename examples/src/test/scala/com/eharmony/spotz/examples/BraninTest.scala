@@ -2,7 +2,7 @@ package com.eharmony.spotz.examples
 
 import com.eharmony.spotz.Preamble.Point
 import org.junit.Assert._
-import org.junit.{Ignore, Test}
+import org.junit.Test
 
 import scala.math.Pi
 

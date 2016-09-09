@@ -10,7 +10,6 @@ sealed trait StopStrategy extends Serializable {
   final val FOREVER = new Duration(Long.MaxValue)
 
   def getMaxTrials: Long = UNLIMITED
-  def getMaxDuration: Duration = FOREVER
 
   def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean
 }
@@ -21,8 +20,10 @@ sealed trait StopStrategy extends Serializable {
   * @param maxTrials
   */
 class MaxTrialsStop(maxTrials: Long) extends StopStrategy {
-  assert(maxTrials > 0, "Must specify greater than 0 trials.")
+  require(maxTrials > 0, "Must specify greater than 0 trials.")
+
   override def getMaxTrials: Long = maxTrials
+
   override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
     optimizerState.trialsSoFar >= maxTrials
   }
@@ -34,9 +35,8 @@ class MaxTrialsStop(maxTrials: Long) extends StopStrategy {
   * @param maxDuration
   */
 class TimedStop(maxDuration: Duration) extends StopStrategy {
-  assert(maxDuration.toStandardSeconds.getSeconds > 0, "Must specify a longer duration")
+  require(maxDuration.toStandardSeconds.getSeconds > 0, "Must specify a longer duration")
 
-  override def getMaxDuration: Duration = maxDuration
   override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
     optimizerState.elapsedTime.getMillis >= maxDuration.getMillis
   }
@@ -50,7 +50,7 @@ class TimedStop(maxDuration: Duration) extends StopStrategy {
   */
 class MaxTrialsOrMaxDurationStop(maxTrials: Long, maxDuration: Duration) extends StopStrategy {
   override def getMaxTrials: Long = maxTrials
-  override def getMaxDuration: Duration = maxDuration
+
   override def shouldStop[P, L](optimizerState: OptimizerState[P, L]): Boolean = {
     optimizerState.trialsSoFar >= maxTrials || optimizerState.elapsedTime.getMillis >= maxDuration.getMillis
   }

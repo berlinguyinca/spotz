@@ -20,8 +20,7 @@ abstract class Uniform[T](lb: T, ub: T) extends RandomSampler[T]
   * @param ub upper bound
   */
 case class UniformDouble(lb: Double, ub: Double) extends Uniform[Double](lb, ub) {
-  if (lb >= ub)
-    throw new IllegalArgumentException("lb must be less than ub")
+  require(lb < ub, "lb must be less than ub")
 
   override def apply(rng: Random): Double = lb + ((ub - lb) * rng.nextDouble)
 }
@@ -39,8 +38,7 @@ case class UniformDouble(lb: Double, ub: Double) extends Uniform[Double](lb, ub)
   * @param ub upper bound
   */
 case class UniformInt(lb: Int, ub: Int) extends Uniform[Int](lb, ub) {
-  if (lb >= ub)
-    throw new IllegalArgumentException("lb must be less than ub")
+  require(lb < ub, "lb must be less than ub")
 
   override def apply(rng: Random): Int = lb + rng.nextInt(ub - lb)
 }

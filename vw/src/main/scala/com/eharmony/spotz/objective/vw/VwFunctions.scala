@@ -22,7 +22,7 @@ trait VwFunctions {
     * @return a new Map[String, String] which is the result of merging the vwParamMap and
     *         the point.
     */
-  def mergeVwParams(vwParamMap: Map[String, _], point: Point): Map[String, _] = {
+  private def mergeVwParams(vwParamMap: Map[String, _], point: Point): Map[String, _] = {
     val vwParamsMutableMap = mutable.Map[String, Any](vwParamMap.toSeq: _*)
 
     point.getHyperParameterLabels.foldLeft(vwParamsMutableMap) { (mutableMap, vwHyperParam) =>
@@ -42,7 +42,7 @@ trait VwFunctions {
     removeParams(vwParamsMutableMap).toMap
   }
 
-  def removeParams(vwParamsMutableMap: mutable.Map[String, _]): mutable.Map[String, _] = {
+  private def removeParams(vwParamsMutableMap: mutable.Map[String, _]): mutable.Map[String, _] = {
     // Remove params
     vwParamsMutableMap.remove("cache_file")        // cache
     vwParamsMutableMap.remove("c")                 // cache
@@ -57,7 +57,7 @@ trait VwFunctions {
     vwParamsMutableMap
   }
 
-  def vwParamMapToString(vwParamMap: Map[String, _]): String = {
+  private def vwParamMapToString(vwParamMap: Map[String, _]): String = {
     vwParamMap.foldLeft(new StringBuilder) { case (sb, (vwArg, vwValue)) =>
       val dashes = if (vwArg.length == 1) "-" else "--"
       val vwParam = vwValue match {

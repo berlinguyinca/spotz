@@ -19,7 +19,7 @@ abstract class AbstractSubset[T](
     (implicit ord: Ordering[T])
   extends Serializable {
 
-  protected val values = iterable.toIndexedSeq
+  protected lazy val values = iterable.toIndexedSeq
 
   protected def sampleWithReplacement(rng: Random): Iterable[T] = {
     val sampleSize = rng.nextInt(K) + 1
@@ -73,7 +73,7 @@ case class Subset[T](
   extends AbstractSubset[T](iterable, K, replacement)
   with IterableRandomSampler[T] {
 
-  assert(K > 0 && K <= values.size, "K must be in the interval (0, N]")
+  require(K > 0 && K <= values.size, "K must be in the interval (0, N]")
 
   def apply(rng: Random): Iterable[T] = sample(rng)
 }
@@ -97,8 +97,8 @@ case class Subsets[T](
   extends AbstractSubset[T](iterable, K, replacement)
   with CombinatoricRandomSampler[T] {
 
-  assert(K > 0 && K <= values.size, "K must be in the interval (0, N]")
-  assert(X > 0, "X must be greater than 0")
+  require(K > 0 && K <= values.size, "K must be in the interval (0, N]")
+  require(X > 0, "X must be greater than 0")
 
   def apply(rng: Random): Iterable[Iterable[T]] = {
     val numSubsets = rng.nextInt(X) + 1
@@ -114,5 +114,3 @@ case class Subsets[T](
     }
   }
 }
-
-

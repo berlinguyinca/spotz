@@ -107,9 +107,10 @@ trait OptimizerState[P, L] {
   val bestLossSoFar: L
   val startTime: DateTime
   val currentTime: DateTime
-  val elapsedTime: Duration
   val trialsSoFar: Long
   val optimizerFinished: Boolean
+
+  def elapsedTime = new Duration(startTime, currentTime)
 }
 
 /**

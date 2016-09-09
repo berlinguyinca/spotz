@@ -33,15 +33,15 @@ trait SparkFunctions extends BackendFunctions {
     * @return the best point with the best loss as a tuple
     */
   protected override def bestRandomPointAndLoss[P, L](
-                                                       startIndex: Long,
-                                                       batchSize: Long,
-                                                       objective: Objective[P, L],
-                                                       reducer: ((P, L), (P, L)) => (P, L),
-                                                       hyperParams: Map[String, RandomSampler[_]],
-                                                       seed: Long = 0,
-                                                       sampleFunction: (Map[String, RandomSampler[_]], Long) => P): (P, L) = {
+    startIndex: Long,
+    batchSize: Long,
+    objective: Objective[P, L],
+    reducer: ((P, L), (P, L)) => (P, L),
+    hyperParams: Map[String, RandomSampler[_]],
+    sampleFunction: (Map[String, RandomSampler[_]], Long) => P,
+    seed: Long = 0): (P, L) = {
 
-    assert(batchSize > 0, "batchSize must be greater than 0")
+    require(batchSize > 0, "batchSize must be greater than 0")
 
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
 
@@ -61,7 +61,8 @@ trait SparkFunctions extends BackendFunctions {
     * lookup inside a <code>Grid</code> object, similarly to how a lookup is
     * done with an <code>IndexedSeq</code> using the apply method.  The index
     * is the trial number.  The points are then applied in the objective
-    * function in parallel and a single (point, loss) tuple with
+    * function in parallel and a single (point, loss) tuple is returned from
+    * the objective.  A reducer then returns the best point and loss.
     *
     * @param startIndex the starting trial index
     * @param batchSize the number of points to sample beginning at the startIndex
@@ -81,6 +82,8 @@ trait SparkFunctions extends BackendFunctions {
       grid: Grid[P],
       reducer: ((P, L), (P, L)) => (P, L))
       (implicit p: ClassTag[P], l: ClassTag[L]): (P, L) = {
+
+    require(batchSize > 0, "batchSize must be greater than 0")
 
     val rdd = sc.parallelize(startIndex until (startIndex + batchSize))
     val pointAndLossRDD = rdd.map { idx =>

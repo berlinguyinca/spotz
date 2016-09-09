@@ -37,7 +37,7 @@ trait FileFunctions {
   * later inside the <code>apply</code> method of the objective function.
   */
 trait FileSystemFunctions extends FileFunctions {
-  lazy val nameToAbsPath = scala.collection.mutable.Map[String, String]()
+  private lazy val nameToAbsPath = scala.collection.mutable.Map[String, String]()
 
   override def save(file: File): String = {
     nameToAbsPath += ((file.getName, file.getAbsolutePath))

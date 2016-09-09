@@ -280,8 +280,8 @@
                             <arg>-target:jvm-${scala.java.version}</arg>
                             <arg>-feature</arg>
                             <arg>-deprecation</arg>
-                            <!-- arg>-Ycheck:jvm</arg -->
-                            <!-- arg>-Ywarn-all</arg -->
+                            <arg>-Ycheck:jvm</arg>
+                            <arg>-Ywarn-all</arg>
                             <arg>-unchecked</arg>
                         </args>
                         <jvmArgs>

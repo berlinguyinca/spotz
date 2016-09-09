@@ -26,7 +26,12 @@ import scala.reflect.ClassTag
   * Internally, points are evaluted in batches to allow intermediate updates from whatever distributed
   * computation framework is being used.
   *
-  * @author vsuthichai
+  * @param trialBatchSize the batch size specifying the number of trials to execute in a batch
+  * @param stopStrategy stopping criteria specifying when to stop the search
+  * @param ord implicit Ordering of (P, L)
+  * @param factory implicit function definition to convert a Map of hyperparameters to point type P
+  * @tparam P point type passed to objective function
+  * @tparam L loss returned from objective function evaluation
   */
 abstract class GridSearch[P, L]
     (trialBatchSize: Int,
@@ -51,7 +56,6 @@ abstract class GridSearch[P, L]
       bestLossSoFar = firstLoss,
       startTime = startTime,
       currentTime = currentTime,
-      elapsedTime = new Duration(startTime, currentTime),
       trialsSoFar = 1L,
       optimizerFinished = 1L >= space.size)
 
@@ -68,38 +72,33 @@ abstract class GridSearch[P, L]
 
     info(s"Best point and loss after ${gsc.trialsSoFar} trials and ${DurationUtils.format(gsc.elapsedTime)} : ${gsc.bestPointSoFar} loss: ${gsc.bestLossSoFar}")
 
-    stopStrategy.shouldStop(gsc) match {
+    if (stopStrategy.shouldStop(gsc)) {
+      // Base case, end recursion, return the result
+      GridSearchResult[P, L](
+        bestPoint = gsc.bestPointSoFar,
+        bestLoss = gsc.bestLossSoFar,
+        startTime = gsc.startTime,
+        endTime = gsc.currentTime,
+        elapsedTime = gsc.elapsedTime,
+        totalTrials = gsc.trialsSoFar)
+    } else {
+      val currentTime = DateTime.now()
+      val elapsedTime = new Duration(gsc.startTime, currentTime)
 
-      case true =>
-        // Base case, end recursion, return the result
-        GridSearchResult[P, L](
-          bestPoint = gsc.bestPointSoFar,
-          bestLoss = gsc.bestLossSoFar,
-          startTime = gsc.startTime,
-          endTime = gsc.currentTime,
-          elapsedTime = gsc.elapsedTime,
-          totalTrials = gsc.trialsSoFar)
+      val batchSize = scala.math.min(space.size - gsc.trialsSoFar, trialBatchSize)
 
-      case false =>
-        val currentTime = DateTime.now()
-        val elapsedTime = new Duration(gsc.startTime, currentTime)
+      val (bestPoint, bestLoss) = reducer((gsc.bestPointSoFar, gsc.bestLossSoFar), bestGridPointAndLoss(gsc.trialsSoFar, batchSize, objective, space, reducer))
+      val trialsSoFar = gsc.trialsSoFar + batchSize
 
+      val gridSearchContext = GridSearchContext(
+        bestPointSoFar = bestPoint,
+        bestLossSoFar = bestLoss,
+        startTime = gsc.startTime,
+        currentTime = currentTime,
+        trialsSoFar = trialsSoFar,
+        optimizerFinished = trialsSoFar >= space.size)
 
-        val batchSize = scala.math.min(space.size - gsc.trialsSoFar, trialBatchSize)
-
-        val (bestPoint, bestLoss) = reducer((gsc.bestPointSoFar, gsc.bestLossSoFar), bestGridPointAndLoss(gsc.trialsSoFar, batchSize, objective, space, reducer))
-        val trialsSoFar = gsc.trialsSoFar + batchSize
-
-        val gridSearchContext = GridSearchContext(
-          bestPointSoFar = bestPoint,
-          bestLossSoFar = bestLoss,
-          startTime = gsc.startTime,
-          currentTime = currentTime,
-          elapsedTime = elapsedTime,
-          trialsSoFar = trialsSoFar,
-          optimizerFinished = trialsSoFar >= space.size)
-
-        gridSearch(objective, space, reducer, gridSearchContext)
+      gridSearch(objective, space, reducer, gridSearchContext)
     }
   }
 }
@@ -109,7 +108,6 @@ case class GridSearchContext[P, L](
     bestLossSoFar: L,
     startTime: DateTime,
     currentTime: DateTime,
-    elapsedTime: Duration,
     trialsSoFar: Long,
     optimizerFinished: Boolean) extends OptimizerState[P, L]
 

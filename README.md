@@ -4,7 +4,7 @@
 Spotz is a
 [hyperparameter optimization](https://en.wikipedia.org/wiki/Hyperparameter_optimization)
 framework written in [Scala](http://www.scala-lang.org) designed to exploit
-[Apache Spark](http://spark.apache.org) perform its distributed computation.
+[Apache Spark](http://spark.apache.org) to perform its distributed computation.
 A broad set of optimization algorithms have been implemented to solve for the
 hyperparameter values of an [objective function](https://en.wikipedia.org/wiki/Loss_function)
 that you specify.
@@ -24,11 +24,11 @@ tuning and does not integrate with other learners.  This project's purpose is
 to build a simple framework that developers can integrate with Spark to fulfill
 their hyperparameter optimization needs.
 
-## VowpalWabbit
+## Vowpal Wabbit
 At [eHarmony](http://www.eharmony.com), we make heavy use of
-[VowpalWabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
+[Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/wiki).
 We use this learner so much that we feel strong integration with VW is very
-important.  Considering that VowpalWabbit does not support hyperparameter
+important.  Considering that Vowpal Wabbit does not support hyperparameter
 optimization out of the box, we've taken steps to support it without losing
 generality.
 
@@ -95,8 +95,8 @@ within the ```Preamble``` object and uses ```Double``` as the loss value.
 Again, importing the default definitions within the Preamble object
 is important for this to work.
 
-The Branin-Hoo function is shown here as a simple example.
-Read more about it here: <http://www.sfu.ca/~ssurjano/branin.html>.
+The [Branin-Hoo](http://www.sfu.ca/~ssurjano/branin.html) function is shown
+here as a simple example.
 
 ```scala
 import com.eharmony.spotz.Preamble._
@@ -132,7 +132,30 @@ class BraninObjective extends Objective[Point, Double] {
 
 ## Hyperparameter Space
 
-Define the space of hyperparameter values that you desire to search.  TODO
+Define the space of hyperparameter values that you desire to search.  This
+space is defined differently depending on the chosen optimizer.  
+
+For random search, the space is defined by a Map where the key is a string
+label and the value is a `RandomSampler` trait.  There are several
+defined classes that implement the `RandomSampler` trait.  For a complete
+list of available `RandomSampler` functions, refer to the documentation.
+
+```scala
+val space = Map(
+  ('x0', UniformDouble(0, 1)),
+  ('x1', RandomChoice("foo", "bar"))
+)
+```
+
+For grid search, the space is defined by a Map where is the key is a string
+label and the value is an `Iterable[T]`.
+
+```scala
+val space = Map(
+  ('x0', Range.Double(0, 1, 0.01)),
+  ('x1', Seq("foo", "bar"))
+)
+```
 
 ## Choose Solver
 

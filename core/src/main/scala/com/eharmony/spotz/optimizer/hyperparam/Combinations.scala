@@ -26,7 +26,7 @@ abstract class AbstractCombinations[T](
     else sampleNoReplacement(rng)
   }
 
-  protected def sampleWithReplacement(rng: Random) = {
+  protected def sampleWithReplacement(rng: Random): IndexedSeq[T] = {
     val combo = new mutable.PriorityQueue[T]()
 
     while (combo.size < k) {
@@ -37,16 +37,12 @@ abstract class AbstractCombinations[T](
     combo.toIndexedSeq
   }
 
-  protected def sampleNoReplacement(rng: Random) = {
+  protected def sampleNoReplacement(rng: Random): IndexedSeq[T] = {
     val combo = mutable.SortedSet[T]()
-    val indices = mutable.Set[Int]()
 
     while (combo.size < k) {
       val index = rng.nextInt(values.length)
-      if (!indices.contains(index)) {
-        indices.add(index)
-        combo.add(values(index))
-      }
+      combo.add(values(index))
     }
 
     combo.toIndexedSeq
@@ -68,8 +64,8 @@ case class Combination[T](
     replacement: Boolean = false)(implicit ord: Ordering[T])
   extends AbstractCombinations[T](iterable, k, replacement)(ord) with IterableRandomSampler[T] {
 
-  assert(k > 0, "k must be greater than 0")
-  assert(k <= values.length, s"k must be less than or equal to length of the iterable, ${values.length}")
+  require(k > 0, "k must be greater than 0")
+  require(k <= values.length, s"k must be less than or equal to length of the iterable, ${values.length}")
 
   override def apply(rng: Random): Iterable[T] = sample(rng)
 }
@@ -94,8 +90,8 @@ case class Combinations[T](
     replacement: Boolean = false)(implicit ord: Ordering[T])
   extends AbstractCombinations[T](iterable, k, replacement)(ord) with CombinatoricRandomSampler[T] {
 
-  assert(k > 0, "k must be greater than 0")
-  assert(k <= values.length, s"k must be less than or equal to length of the iterable, ${values.length}")
+  require(k > 0, "k must be greater than 0")
+  require(k <= values.length, s"k must be less than or equal to length of the iterable, ${values.length}")
 
   override def apply(rng: Random): Iterable[Iterable[T]] = {
     if (replacement) {

@@ -20,7 +20,7 @@ object FileUtil {
     *
     * @param prefix
     * @param suffix
-    * @param deleteOnExit
+    * @param deleteOnExit boolean indicating if this file should be deleted when the jvm exists
     * @return
     */
   def tempFile(prefix: String, suffix: String, deleteOnExit: Boolean): File = {
@@ -31,9 +31,11 @@ object FileUtil {
   }
 
   /**
+    * Create a temp file.
     *
-    * @param filename
-    * @param deleteOnExit
+    * @param filename name of temp file that will be enhanced with more characters to ensure it doesn't exist on
+    *                 the file system
+    * @param deleteOnExit boolean indicating if this file should be deleted when the jvm exists
     * @return
     */
   def tempFile(filename: String, deleteOnExit: Boolean = true): File = {
@@ -47,7 +49,11 @@ object FileUtil {
     * @return lines of the file as an Iterator[String]
     */
   def loadFile(path: String): Iterator[String] = {
-    Source.fromInputStream(loadFileInputStream(path)).getLines()
+    val is = loadFileInputStream(path)
+    // Force reading the entire file instead of reading it lazily
+    val lines = Source.fromInputStream(is).getLines().toSeq.toIterator
+    is.close()
+    lines
   }
 
   /**
