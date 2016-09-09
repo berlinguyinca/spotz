@@ -142,8 +142,8 @@ list of available `RandomSampler` functions, refer to the documentation.
 
 ```scala
 val space = Map(
-  ('x0', UniformDouble(0, 1)),
-  ('x1', RandomChoice("foo", "bar"))
+  ("x0", UniformDouble(0, 1)),
+  ("x1", RandomChoice("foo", "bar"))
 )
 ```
 
@@ -152,8 +152,8 @@ label and the value is an `Iterable[T]`.
 
 ```scala
 val space = Map(
-  ('x0', Range.Double(0, 1, 0.01)),
-  ('x1', Seq("foo", "bar"))
+  ("x0", Range.Double(0, 1, 0.01)),
+  ("x1", Seq("foo", "bar"))
 )
 ```
 
