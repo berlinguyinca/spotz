@@ -37,6 +37,12 @@
         </repository>
     </distributionManagement>
 
+    <scm>
+        <connection>scm:git:git@github.com:eHarmony/spotz.git</connection>
+        <url>git@github.com:eHarmony/spotz.git</url>
+        <developerConnection>scm:git:git@github.com:eHarmony/spotz.git</developerConnection>
+    </scm>
+
     <licenses>
         <license>
             <name>MIT License</name>
