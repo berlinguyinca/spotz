@@ -17,10 +17,6 @@
     </organization>
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>eHarmony</id>
-            <url>https://repository.corp.eharmony.com/nexus/content/repositories/internal-snapshots</url>
-        </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
