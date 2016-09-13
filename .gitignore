@@ -42,6 +42,7 @@ Thumbs.db
 dependency-reduced-pom.xml
 intellij
 log4j.xml
+metastore.db
 *.err
 *.cache
 *.model

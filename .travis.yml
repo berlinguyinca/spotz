@@ -5,3 +5,8 @@ jdk:
 
 scala:
     - 2.10.5
+
+after_failure:
+    - cat core/target/surefire-reports/*.txt
+    - cat vw/target/surefire-reports/*.txt
+    - cat examples/target/surefire-reports/*.txt
