@@ -196,15 +196,17 @@ above, here is all the necessary boilerplate to make your example work.
 ```scala
 import com.eharmony.spotz.Preamble._
 import com.eharmony.spotz.optimizer.StopStrategy
-import com.eharmony.spotz.optimizer.random.{SparkRandomSearch, Uniform}
+import com.eharmony.spotz.optimizer.random.SparkRandomSearch
+import com.eharmony.spotz.optimizer.hyperparam.UniformDouble
+import com.eharmony.spotz.examples.BraninObjective
 import org.apache.spark.{SparkConf, SparkContext}
 
 val sc = new SparkContext(new SparkConf().setAppName("Branin Function Trials"))
 val space = Map(
-  ("x1", new Uniform(-5, 10),
-  ("x2", new Uniform(0, 15)
+  ("x1", new UniformDouble(-5, 10)),
+  ("x2", new UniformDouble(0, 15))
 )
-val stopStrategy = StopStrategy.stopAfterMaxTrials(maxTrials)
+val stopStrategy = StopStrategy.stopAfterMaxTrials(100000)
 val optimizer = new SparkRandomSearch[Point, Double](sc, stopStrategy)
 val result = optimizer.minimize(new BraninObjective, space)
 sc.stop()
