@@ -2,7 +2,6 @@ package com.eharmony.spotz.objective.vw
 
 import com.eharmony.spotz.Preamble.Point
 
-import scala.Option
 import scala.collection.mutable
 
 trait VwFunctions {
