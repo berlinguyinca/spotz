@@ -2,6 +2,7 @@ package com.eharmony.spotz.objective.vw
 
 import com.eharmony.spotz.Preamble.Point
 
+import scala.Option
 import scala.collection.mutable
 
 trait VwFunctions {
@@ -88,6 +89,13 @@ trait VwFunctions {
         case _ => throw new IllegalArgumentException(s"Invalid bit size ${vwParamMap("bit_precision")}")
       }
       case _ => throw new IllegalArgumentException(s"Invalid bit size ${vwParamMap("b")}")
+    }
+  }
+
+  def getContextualBanditActions(vwParamMap: Map[String, _]): Option[Int] = {
+    vwParamMap.get("cb") match {
+      case Some(cb: String) => Option(cb.toInt)
+      case None => None
     }
   }
 

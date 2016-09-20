@@ -28,8 +28,9 @@ abstract class AbstractVwCrossValidationObjective(
   val vwTestParamsMap = parseVwArgs(vwTestParamsString)
 
   val cacheBitSize = getCacheBitSize(vwTrainParamsMap)
+  val cb = getContextualBanditActions(vwTrainParamsMap)
 
-  val foldToVwCacheFiles = kFold(vwDataset, numFolds, cacheBitSize)
+  val foldToVwCacheFiles = kFold(vwDataset, numFolds, cacheBitSize, cb)
 
   /**
     * This method can run on the driver and/or the executor.  It performs a k-fold cross validation
