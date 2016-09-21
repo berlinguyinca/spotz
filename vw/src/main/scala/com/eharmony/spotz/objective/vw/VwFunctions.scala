@@ -91,13 +91,6 @@ trait VwFunctions {
     }
   }
 
-  def getContextualBanditActions(vwParamMap: Map[String, _]): Option[Int] = {
-    vwParamMap.get("cb") match {
-      case Some(cb: String) => Option(cb.toInt)
-      case None => None
-    }
-  }
-
   def parseVwArgs(args: Option[String]) = VwArgParser(args)
 }
 

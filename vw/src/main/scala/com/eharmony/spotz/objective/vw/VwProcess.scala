@@ -56,16 +56,15 @@ case class VwResult(
 object VwProcess {
   val avgLossRegex = s"average\\s+loss\\s+=\\s+($floatingPointRegex)".r
 
-  def generateCache(inputStream: InputStream, cachePath: String, bitSize: Int, cb: Option[Int]) {
-    val cbParam = cb.fold("")(cbVal => s"--cb $cbVal")
-    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -b $bitSize $cbParam", Option(inputStream))
+  def generateCache(inputStream: InputStream, cachePath: String, cacheParams: String) {
+    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath $cacheParams", Option(inputStream))
     val vwCacheResult = vwCacheProcess()
 
     assert(vwCacheResult.exitCode == 0,
       s"VW Training cache exited with non-zero exit code ${vwCacheResult.exitCode}")
   }
 
-  def generateCache(vwDatasetIterator: Iterator[String], cachePath: String, bitSize: Int, cb: Option[Int]) {
+  def generateCache(vwDatasetIterator: Iterator[String], cachePath: String, cacheParams: String) {
     val pos = new PipedOutputStream
     val pis = new PipedInputStream(pos)
     val pw = new PrintWriter(pos, true)
@@ -75,12 +74,11 @@ object VwProcess {
       pw.close()
     }
 
-    generateCache(pis, cachePath, bitSize, cb)
+    generateCache(pis, cachePath, cacheParams)
   }
 
-  def generateCache(vwDatasetPath: String, cachePath: String, bitSize: Int, cb: Option[Int]) {
-    val cbParam = cb.fold("")(cbVal => s"--cb $cbVal")
-    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -d $vwDatasetPath -b $bitSize $cbParam", None)
+  def generateCache(vwDatasetPath: String, cachePath: String, cacheParams: String) {
+    val vwCacheProcess = VwProcess(s"-k --cache_file $cachePath -d $vwDatasetPath $cacheParams", None)
     val vwCacheResult = vwCacheProcess()
 
     assert(vwCacheResult.exitCode == 0,

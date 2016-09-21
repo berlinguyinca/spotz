@@ -21,11 +21,8 @@ abstract class AbstractVwHoldoutObjective(
   private val vwTrainParamMap = parseVwArgs(vwTrainParamsString)
   private val vwTestParamMap = parseVwArgs(vwTestParamsString)
 
-  private val cacheBitSize = getCacheBitSize(vwTrainParamMap)
-  val cb = getContextualBanditActions(vwTrainParamMap)
-
-  private val vwTrainCacheFilename = saveAsCache(vwTrainSetIterator, "train-dataset.cache", cacheBitSize, cb)
-  private val vwTestCacheFilename = saveAsCache(vwTestSetIterator, "test-dataset.cache", cacheBitSize, cb)
+  private val vwTrainCacheFilename = saveAsCache(vwTrainSetIterator, "train-dataset.cache", vwTrainParamMap)
+  private val vwTestCacheFilename = saveAsCache(vwTestSetIterator, "test-dataset.cache", vwTrainParamMap)
 
   override def apply(point: Point): Double = {
     // Initialize the model file on the filesystem.  Reserve a unique filename.
