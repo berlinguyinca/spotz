@@ -23,7 +23,7 @@ trait ParExampleRunner extends ExampleRunner {
   }
 
   override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int): GridSearchResult[Point, Double] = {
-    val optimizer = new ParGridSearch[Point, Double](numBatchTrials)
+    val optimizer = new ParGridSearch[Point, Double](trialBatchSize = numBatchTrials)
     optimizer.minimize(objective, params)
   }
 }
@@ -39,7 +39,7 @@ trait SparkExampleRunner extends ExampleRunner {
   }
 
   override def gridSearch(objective: Objective[Point, Double], params: Map[String, Iterable[AnyVal]], numBatchTrials: Int) = {
-    val optimizer = new SparkGridSearch[Point, Double](sc, numBatchTrials)
+    val optimizer = new SparkGridSearch[Point, Double](sc, trialBatchSize = numBatchTrials)
     val result = optimizer.minimize(objective, params)
     sc.stop()
     result

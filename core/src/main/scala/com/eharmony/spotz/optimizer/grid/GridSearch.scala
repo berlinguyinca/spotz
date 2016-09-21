@@ -26,16 +26,16 @@ import scala.reflect.ClassTag
   * Internally, points are evaluted in batches to allow intermediate updates from whatever distributed
   * computation framework is being used.
   *
-  * @param trialBatchSize the batch size specifying the number of trials to execute in a batch
   * @param stopStrategy stopping criteria specifying when to stop the search
+  * @param trialBatchSize the batch size specifying the number of trials to execute in a batch
   * @param ord implicit Ordering of (P, L)
   * @param factory implicit function definition to convert a Map of hyperparameters to point type P
   * @tparam P point type passed to objective function
   * @tparam L loss returned from objective function evaluation
   */
-abstract class GridSearch[P, L]
-    (trialBatchSize: Int,
-    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes)
+abstract class GridSearch[P, L](
+    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes,
+    trialBatchSize: Int)
     (implicit ord: Ordering[(P, L)], factory: Map[String, _] => P)
   extends AbstractOptimizer[P, L, Map[String, Iterable[Any]], GridSearchResult[P, L]]
   with BackendFunctions
@@ -121,10 +121,10 @@ case class GridSearchContext[P, L](
   * @tparam L loss type representation
   */
 class ParGridSearch[P, L](
-    trialBatchSize: Int = 1000000,
-    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes)
+    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes,
+    trialBatchSize: Int = 1000000)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends GridSearch[P, L](trialBatchSize, stopStrategy)(ord, factory)
+  extends GridSearch[P, L](stopStrategy, trialBatchSize)(ord, factory)
   with ParallelFunctions
 
 /**
@@ -139,8 +139,8 @@ class ParGridSearch[P, L](
   */
 class SparkGridSearch[P, L](
     @transient val sc: SparkContext,
-    trialBatchSize: Int = 1000000,
-    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes)
+    stopStrategy: StopStrategy = StopStrategy.stopWhenOptimizerFinishes,
+    trialBatchSize: Int = 1000000)
     (implicit val ord: Ordering[(P, L)], factory: Map[String, _] => P)
-  extends GridSearch[P, L](trialBatchSize, stopStrategy)(ord, factory)
+  extends GridSearch[P, L](stopStrategy, trialBatchSize)(ord, factory)
   with SparkFunctions
