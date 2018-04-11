@@ -3,7 +3,7 @@ package com.eharmony.spotz.optimizer.random
 import com.eharmony.spotz.backend.{BackendFunctions, ParallelFunctions, SparkFunctions}
 import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer._
-import com.eharmony.spotz.optimizer.hyperparam.RandomSampler
+import com.eharmony.spotz.optimizer.hyperparam.{RandomSampler, RandomSamplerWithState}
 import com.eharmony.spotz.util.{DurationUtils, Logging}
 import org.apache.spark.SparkContext
 import org.joda.time.{DateTime, Duration}
@@ -53,7 +53,12 @@ abstract class RandomSearch[P, L](
     val rng = new Random(theSeed)
     // Get rid of the first sample due to low entropy
     rng.nextDouble()
-    factory(params.map { case (label, sampler) => (label, sampler(rng)) } )
+    factory(params.foldLeft(Map.empty[String, Any]){ case (m, (label, sampler)) =>
+      if (sampler.isInstanceOf[RandomSamplerWithState[_]])
+        m + (label -> sampler.asInstanceOf[RandomSamplerWithState[_]](rng, m))
+      else
+        m + (label -> sampler(rng))
+    })
   }
 
   override protected def optimize(objective: Objective[P, L],
