@@ -241,19 +241,6 @@
                                 </rules>
                             </configuration>
                         </execution>
-                        <execution>
-                            <id>enforce-ban-version-downgrades</id>
-                            <goals>
-                                <goal>enforce</goal>
-                            </goals>
-                            <configuration>
-                                <rules>
-                                    <requireUpperBoundDeps>
-                                        <uniqueVersions>true</uniqueVersions>
-                                    </requireUpperBoundDeps>
-                                </rules>
-                            </configuration>
-                        </execution>
                     </executions>
                     <dependencies>
                         <dependency>
