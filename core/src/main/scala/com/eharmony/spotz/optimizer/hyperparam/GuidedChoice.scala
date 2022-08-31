@@ -7,7 +7,7 @@ abstract class GuidedChoice[K, T](key: String) extends RandomSamplerWithState[T]
 }
 
 case class IndexedChoice[K, T](key: String, values: Map[K, Vector[T]]) extends GuidedChoice[K, T](key) {
-  private val choices = values.mapValues(xs => RandomChoice(xs))
+  private val choices = values.view.mapValues(xs => RandomChoice(xs))
 
   def apply(rng: Random, m: Map[String, Any]): T = choices(guide(m))(rng)
 }

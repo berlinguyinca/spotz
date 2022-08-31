@@ -8,8 +8,8 @@ import com.eharmony.spotz.optimizer.{OptimizerResult, StopStrategy}
 import scala.math._
 
 /**
-  * The Ackley function described here: <link>http://www.sfu.ca/~ssurjano/ackley.html</link>.
-  */
+ * The Ackley function described here: <link>http://www.sfu.ca/~ssurjano/ackley.html</link>.
+ */
 class AckleyObjective extends Objective[Point, Double] {
   def apply(p: Point): Double = {
     val x = p.get[Double]("x")
@@ -41,12 +41,15 @@ trait AckleyRandomSearch extends AckleyExample with RandomSearchRunner {
 
 trait AckleyGridSearch extends AckleyExample with GridSearchRunner {
   val hyperParameters = Map(
-    ("x", Range.Double(-5, 5, 0.01)),
-    ("y", Range.Double(-5, 5, 0.01))
+    ("x", Range.BigDecimal(-5, 5, 0.01).map(_.doubleValue)),
+    ("y", Range.BigDecimal(-5, 5, 0.01).map(_.doubleValue))
   )
 }
 
 object AckleyParGridSearch extends AckleyGridSearch with ParExampleRunner
+
 object AckleyParRandomSearch extends AckleyRandomSearch with ParExampleRunner
+
 object AckleySparkGridSearch extends AckleyGridSearch with SparkExampleRunner
+
 object AckleySparkRandomSearch extends AckleyRandomSearch with SparkExampleRunner

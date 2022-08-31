@@ -10,8 +10,8 @@ import org.junit.Test
   */
 class GridTest {
   val simpleGrid = new Grid[Point](Map(
-    ("foo", Range.Double(0, 1, 0.001)),
-    ("bar", Range.Double(0, 1, 0.001))
+    ("foo", Range.BigDecimal(0, 1, 0.001)),
+    ("bar", Range.BigDecimal(0, 1, 0.001))
   ))
 
   @Test
@@ -25,9 +25,9 @@ class GridTest {
   @Test
   def testBigGrid() {
     val gs = new Grid[Point](Map(
-      ("foo", Range.Double(0, 1, 0.000001)),
-      ("bar", Range.Double(0, 1, 0.000001)),
-      ("baz", Range.Double(0, 1, 0.000001))
+      ("foo", Range.BigDecimal(0, 1, 0.000001)),
+      ("bar", Range.BigDecimal(0, 1, 0.000001)),
+      ("baz", Range.BigDecimal(0, 1, 0.000001))
     ))
 
     assertEquals(gs.size, 1000000L * 1000000L * 1000000L)

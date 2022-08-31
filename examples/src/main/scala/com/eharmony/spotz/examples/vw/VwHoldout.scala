@@ -7,8 +7,8 @@ import com.eharmony.spotz.optimizer.hyperparam.{Combinations, RandomSampler, Uni
 import org.apache.spark.SparkContext
 
 /**
-  * @author vsuthichai
-  */
+ * @author vsuthichai
+ */
 trait AbstractVwHoldout extends ExampleRunner {
   def getObjective(conf: VwHoldoutConfiguration): AbstractVwHoldoutObjective
 }
@@ -66,8 +66,8 @@ trait VwHoldoutRandomSearch extends VwHoldout {
 
 trait VwHoldoutGridSearch extends VwHoldout {
   val space = Map(
-    ("l",  Range.Double(0, 1, 0.04)),
-    ("l2", Range.Double(0, 1, 0.04))
+    ("l", Range.BigDecimal(0, 1, 0.04).map(_.doubleValue)),
+    ("l2", Range.BigDecimal(0, 1, 0.04).map(_.doubleValue))
   )
 
   def main(args: Array[String]) {
@@ -88,6 +88,9 @@ trait VwHoldoutGridSearch extends VwHoldout {
 }
 
 object VwHoldoutSparkRandomSearch extends SparkVwHoldout with VwHoldoutRandomSearch with SparkExampleRunner
+
 object VwHoldoutParRandomSearch extends VwHoldout with VwHoldoutRandomSearch with ParExampleRunner
+
 object VwHoldoutSparkGridSearch extends SparkVwHoldout with VwHoldoutGridSearch with SparkExampleRunner
+
 object VwHoldoutParGridSearch extends VwHoldout with VwHoldoutGridSearch with ParExampleRunner

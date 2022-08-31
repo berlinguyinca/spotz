@@ -55,8 +55,8 @@ trait BraninRandomSearch extends BraninExample with RandomSearchRunner with Exam
 
 trait BraninGridSearch extends BraninExample with GridSearchRunner with ExampleRunner {
   val hyperParameters = Map(
-    ("x1", Range.Double(-5, 10, 0.01)),
-    ("x2", Range.Double(0, 15, 0.01))
+    ("x1", Range.BigDecimal(-5, 10, 0.01).map(_.doubleValue)),
+    ("x2", Range.BigDecimal(0, 15, 0.01).map(_.doubleValue))
   )
 }
 

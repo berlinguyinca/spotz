@@ -19,8 +19,8 @@ import scala.language.postfixOps
   *   import com.eharmony.spotz.Preamble._
   *
   *   val grid = new Grid[Point](Map(
-  *     ("x1", Range.Double(0.0, 1.0, 0.1)),
-  *     ("x2", Range.Double(0.0, 1.0, 0.1))
+  *     ("x1", Range.BigDecimal(0.0, 1.0, 0.1)),
+  *     ("x2", Range.BigDecimal(0.0, 1.0, 0.1))
   *   )
   *
   *   val length = grid.length            // 100

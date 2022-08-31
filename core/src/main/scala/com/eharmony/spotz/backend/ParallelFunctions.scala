@@ -4,6 +4,7 @@ import com.eharmony.spotz.objective.Objective
 import com.eharmony.spotz.optimizer.grid.Grid
 import com.eharmony.spotz.optimizer.hyperparam.RandomSampler
 
+import scala.collection.parallel.CollectionConverters.ImmutableIterableIsParallelizable
 import scala.reflect.ClassTag
 
 /**

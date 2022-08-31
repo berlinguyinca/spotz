@@ -15,7 +15,7 @@ trait RandomSampler[T] extends Serializable {
 }
 
 trait RandomSamplerWithState[T] extends RandomSampler[T] {
-  def apply(rng: Random, params: Map[String, _]): T
+  def apply(rng: Random, params: Map[String, Any]): T
   def apply(rng: Random) = apply(rng, Map.empty[String, Any])
 }
 

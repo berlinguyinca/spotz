@@ -12,13 +12,13 @@ class Configuration(args: Array[String]) extends ScallopConf(args) {
 trait RandomSearchConfiguration extends Configuration {
   validateOpt(duration, numTrials) {
     case (None, None) => Left("Must specify at least one of numTrials or duration")
-    case _ => Right(Unit)
+    case _ => Right()
   }
 }
 
 trait GridSearchConfiguration extends Configuration {
   validateOpt(duration, numTrials) {
-    case (None, None) => Right(Unit)
+    case (None, None) => Right()
     case _ => Left("numTrials and numSeconds are not needed in a grid search")
   }
 }
