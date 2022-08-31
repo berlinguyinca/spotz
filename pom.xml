@@ -4,7 +4,7 @@
 
     <groupId>com.eharmony</groupId>
     <artifactId>spotz-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-WCMCSNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Spark HyperParameter Optimization Parent Pom</name>
     <description>A library for performing hyperparameter optimization on top of Spark</description>
